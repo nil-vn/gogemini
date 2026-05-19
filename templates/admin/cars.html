@@ -1,0 +1,287 @@
+{% extends "_base.html" %}
+
+{% block breadcrumb %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="mb-0">{{ _('Car List') }}</h5>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <ul class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_routes.dashboard') }}">{{ _('Home') }}</a></li>
+                    <li class="breadcrumb-item"><a href="#!">{{ _('Car Management') }}</a></li>
+                    <li class="breadcrumb-item"><a href="#!">{{ _('Car List') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% set status_colors = {
+    'AVAILABLE': 'bg-light-success',
+    'AWAITING_DELIVERY': 'bg-light-primary',
+    'SOLD': 'bg-light-info'
+} %}
+{% set situation_colors = {
+    'REFURBISHED': 'bg-light-success',
+    'NOT_REFURBISHED': 'bg-light-danger',
+    'REFURBISHED_PENDING_CLEANING': 'bg-light-warning'
+} %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                
+{% macro car_table(table_id, car_list) %}
+<div class="table-responsive">
+    <table class="table table-hover" id="{{ table_id }}">
+        <thead>
+        <tr>
+            <th>{{ _('No.') }}</th>
+            <th>{{ _('Name/Model') }}</th>
+            <th>{{ _('Branch') }}</th>
+            <th>{{ _('Situation') }}</th>
+            <th>{{ _('Imported Date') }}</th>
+            <th>{{ _('Selling Price') }} ({{ currency_symbol }})</th>
+            <th>{{ _('Status') }}</th>
+            <th class="text-end">{{ _('Actions') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for car in car_list %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h6 class="mb-1"><a href="{{ url_for('admin_routes.car_detail', car_id=car.id) }}" class="text-truncate w-100">{{ car.name }}</a>
+                        </h6>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="col-auto pe-0">
+                    <img src="{{ url_for('static', filename='admin/images/branch/'+ (car.branch|lower if car.branch else 'toyota') +'.svg') }}"
+                         alt="{{ car.branch }}" class="wid-40 hei-40 rounded-circle" onerror="this.onerror=null; this.src='{{ url_for('static', filename='admin/images/branch/toyota.svg') }}';"/>
+                </div>
+            </td>
+            <td><span class="badge {{ situation_colors.get(car.car_situation, 'bg-light-info') }}">{{ car.situation_label or '-' }}</span></td>
+            <td>{{ car.imported_date or '-'  }}</td>
+            <td>{{ car.selling_price | format_currency }}</td>
+            <td><span class="badge {{ status_colors.get(car.status, 'bg-light-success') }}">{{ car.status_label or ''  }}</span></td>
+            <td class="text-end">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item"
+                    ><a href="{{ url_for('admin_routes.car_detail', car_id=car.id) }}" class="avatar avatar-s btn-link-info btn-pc-default"><i
+                            class="ti ti-eye f-20"></i></a
+                    ></li>
+                    <li class="list-inline-item"
+                    ><a href="{{ url_for('admin_routes.delete_car', car_id=car.id) }}" class="avatar avatar-s btn-link-danger btn-pc-default"><i
+                            class="ti ti-trash f-20"></i></a
+                    ></li>
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}
+
+<ul class="nav nav-tabs invoice-tab mb-3 flex-nowrap" id="myTab" role="tablist" style="white-space: nowrap; font-size: 0.72rem;">
+    <!-- 1. Tất cả -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-1" data-bs-toggle="tab" data-bs-target="#pane-1" type="button" role="tab" aria-selected="true">
+            <span class="d-flex align-items-center gap-2">{{_('All')}} <span class="avatar rounded-circle bg-light-secondary">{{ cars|length }}</span></span>
+        </button>
+    </li>
+    <!-- 2. Có sẵn -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-2" data-bs-toggle="tab" data-bs-target="#pane-2" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Available (inc. Awaiting)')}} <span class="avatar rounded-circle {{ status_colors.get('AVAILABLE') }}">{{ available_cars|length }}</span></span>
+        </button>
+    </li>
+    <!-- 3. Đang chờ giao -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-3" data-bs-toggle="tab" data-bs-target="#pane-3" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Awaiting Delivery')}} <span class="avatar rounded-circle {{ status_colors.get('AWAITING_DELIVERY') }}">{{ awaiting_delivery_cars|length }}</span></span>
+        </button>
+    </li>
+    <!-- 4. Đã bán -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-4" data-bs-toggle="tab" data-bs-target="#pane-4" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Sold')}} <span class="avatar rounded-circle {{ status_colors.get('SOLD') }}">{{ sold_cars|length }}</span></span>
+        </button>
+    </li>
+    <!-- 5. Sơn sửa rồi -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-5" data-bs-toggle="tab" data-bs-target="#pane-5" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Refurbished')}} <span class="avatar rounded-circle {{ situation_colors.get('REFURBISHED') }}">{{ refurbished_cars|length }}</span></span>
+        </button>
+    </li>
+    <!-- 6. Chưa sơn sửa -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-6" data-bs-toggle="tab" data-bs-target="#pane-6" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Not Refurbished')}} <span class="avatar rounded-circle {{ situation_colors.get('NOT_REFURBISHED') }}">{{ not_refurbished_cars|length }}</span></span>
+        </button>
+    </li>
+    <!-- 7. Sơn sửa rồi - chưa vệ sinh -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-7" data-bs-toggle="tab" data-bs-target="#pane-7" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Refurbished/Pending Cleaning')}} <span class="avatar rounded-circle {{ situation_colors.get('REFURBISHED_PENDING_CLEANING') }}">{{ refurbished_pending_cleaning_cars|length }}</span></span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="pane-1" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-1', cars) }}
+    </div>
+    <div class="tab-pane fade" id="pane-2" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-2', available_cars) }}
+    </div>
+    <div class="tab-pane fade" id="pane-3" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-3', awaiting_delivery_cars) }}
+    </div>
+    <div class="tab-pane fade" id="pane-4" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-4', sold_cars) }}
+    </div>
+    <div class="tab-pane fade" id="pane-5" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-5', refurbished_cars) }}
+    </div>
+    <div class="tab-pane fade" id="pane-6" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-6', not_refurbished_cars) }}
+    </div>
+    <div class="tab-pane fade" id="pane-7" role="tabpanel" tabindex="0">
+        {{ car_table('pc-dt-simple-7', refurbished_pending_cleaning_cars) }}
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-12">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Total Cars') }}</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ cars|length }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('all situations') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="cars-chart-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Available Cars') }}</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ available_cars|length }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('ready or awaiting') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="cars-chart-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Sold Cars') }}</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ sold_cars|length }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('paid transactions') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="cars-chart-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='admin/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='admin/js/plugins/simple-datatables.js') }}"></script>
+<script>
+    ['#pc-dt-simple-1', '#pc-dt-simple-2', '#pc-dt-simple-3', '#pc-dt-simple-4', '#pc-dt-simple-5', '#pc-dt-simple-6', '#pc-dt-simple-7'].forEach((tb) => {
+        const dt = new simpleDatatables.DataTable(tb, { 
+            sortable: true,
+            searchQuerySeparator: "",
+            labels: {
+                placeholder: "{{ _('Search...') }}",
+                perPage: "{{ _('entries per page') }}",
+                noRows: "{{ _('No entries found') }}",
+                noResults: "{{ _('No entries found') }}",
+                info: "{{ _('Showing {start} to {end} of {rows} entries') }}"
+            }
+        });
+
+        dt.on('datatable.init', () => {
+            const searchContainer = document.querySelector(tb).closest('.datatable-wrapper').querySelector('.datatable-search');
+            if (searchContainer && !searchContainer.querySelector('.add-new-btn')) {
+                const btn = document.createElement('a');
+                btn.href = "{{ url_for('admin_routes.car_new') }}";
+                btn.className = "btn btn-success ms-2 add-new-btn d-inline-flex align-items-center gap-1 text-nowrap";
+                btn.innerHTML = "<i class='ti ti-plus'></i> {{ _('Add New Car') }}";
+                searchContainer.appendChild(btn);
+                searchContainer.classList.add('d-flex', 'align-items-center');
+            }
+        });
+    });
+    
+    // Custom sparkline charts for 3 Cards
+    function renderSparkline(chartId, dataArray, color) {
+        var options = {
+            chart: { type: 'area', height: 60, sparkline: { enabled: true } },
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
+            series: [{ name: 'Count', data: dataArray }],
+            colors: [color],
+            tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function () { return '' } } } }
+        };
+        new ApexCharts(document.querySelector(chartId), options).render();
+    }
+    
+    // Simulate some growth data ending with the actual number
+    renderSparkline("#cars-chart-1", [10, 15, 25, 30, 40, {{ cars|length }}], '#0d6efd');
+    renderSparkline("#cars-chart-2", [5, 8, 12, 10, 15, {{ available_cars|length }}], '#198754');
+    renderSparkline("#cars-chart-3", [2, 5, 4, 8, 10, {{ sold_cars|length }}], '#ffc107');
+    
+</script>
+{% endblock %}

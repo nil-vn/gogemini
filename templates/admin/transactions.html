@@ -1,0 +1,248 @@
+{% extends "_base.html" %}
+
+{% block breadcrumb %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="mb-0">{{ _('Transactions') }}</h5>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <ul class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin">{{ _('Home') }}</a></li>
+                    <li class="breadcrumb-item"><a href="#!">{{ _('Sale Management') }}</a></li>
+                    <li class="breadcrumb-item"><a href="#!">{{ _('Transactions') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                
+{% macro transaction_table(table_id, tx_list) %}
+<div class="table-responsive">
+    <table class="table table-hover" id="{{ table_id }}">
+        <thead>
+        <tr>
+            <th>{{ _('No.') }}</th>
+            <th>{{ _('Customer Name') }}</th>
+            <th>{{ _('Car Name') }}</th>
+            <th>{{ _('Purchase Date') }}</th>
+            <th>{{ _('Selling Price') }} ({{ currency_symbol }})</th>
+            <th>{{ _('Deposit') }} ({{ currency_symbol }})</th>
+            <th>{{ _('Other Transaction') }} ({{ currency_symbol }})</th>
+            <th>{{ _('Total Amount') }} ({{ currency_symbol }})</th>
+            <th>{{ _('Status') }}</th>
+            <th class="text-end">{{ _('Action') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for transaction in tx_list %}
+            {% set outer_loop = loop %}
+            {% for car in transaction.cars %}
+            <tr>
+                <td>{{ outer_loop.index }}</td>
+                <td>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="mb-1"><a href="{{ url_for('admin_routes.customer_detail', customer_id=transaction.customer.id) }}">{{ transaction.customer.name }}</a></h6>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="mb-1"><a href="{{ url_for('admin_routes.car_detail', car_id=car.id) }}">{{ car.name }}</a></h6>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ transaction.purchase_date or '-' }}</td>
+                <td>{{ transaction.selling_price | format_currency }}</td>
+                <td>
+                    {% if transaction.status == 'Đã thanh toán' or transaction.status == 'Paid' %}
+                        -
+                    {% else %}
+                        {{ transaction.deposit_amount | format_currency }}
+                    {% endif %}
+                </td>
+                <td>{{ transaction.total_other_amount | format_currency }}</td>
+                <td><b>{{ transaction.total_amount | format_currency }}</b></td>
+                <td><span class="badge bg-light-success">{{ transaction.status_label or '' }}</span></td>
+                <td class="text-end">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a href="{{ url_for('admin_routes.transaction_detail', transaction_id=transaction.id) }}" class="avatar avatar-s btn-link-success btn-pc-default" title="Edit"><i class="ti ti-edit f-20"></i></a></li>
+                        <li class="list-inline-item"><a href="{{ url_for('admin_routes.transaction_detail', transaction_id=transaction.id) }}" class="avatar avatar-s btn-link-info btn-pc-default" title="View"><i class="ti ti-eye f-20"></i></a></li>
+                        <li class="list-inline-item"><a href="{{ url_for('admin_routes.delete_transaction', transaction_id=transaction.id) }}" class="avatar avatar-s btn-link-danger btn-pc-default" title="Delete"><i class="ti ti-trash f-20"></i></a></li>
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}
+
+<ul class="nav nav-tabs invoice-tab mb-3" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-1" data-bs-toggle="tab" data-bs-target="#pane-1" type="button" role="tab" aria-selected="true">
+            <span class="d-flex align-items-center gap-2">{{_('All')}} <span class="avatar rounded-circle bg-light-primary">{{ transactions|length }}</span></span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-2" data-bs-toggle="tab" data-bs-target="#pane-2" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Deposited')}} <span class="avatar rounded-circle bg-light-warning">{{ deposited_transactions|length }}</span></span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-3" data-bs-toggle="tab" data-bs-target="#pane-3" type="button" role="tab" aria-selected="false">
+            <span class="d-flex align-items-center gap-2">{{_('Paid')}} <span class="avatar rounded-circle bg-light-success">{{ paid_transactions|length }}</span></span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="pane-1" role="tabpanel" tabindex="0">
+        {{ transaction_table('pc-dt-simple-1', transactions) }}
+    </div>
+    <div class="tab-pane fade" id="pane-2" role="tabpanel" tabindex="0">
+        {{ transaction_table('pc-dt-simple-2', deposited_transactions) }}
+    </div>
+    <div class="tab-pane fade" id="pane-3" role="tabpanel" tabindex="0">
+        {{ transaction_table('pc-dt-simple-3', paid_transactions) }}
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-12">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Total Revenue') }} ({{ currency_symbol }})</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ total_revenue | format_currency }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('estimated') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="tx-chart-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Paid Revenue') }} ({{ currency_symbol }})</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ paid_revenue | format_currency }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('collected') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="tx-chart-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Deposited') }} ({{ currency_symbol }})</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ deposited_amount | format_currency }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('holding') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="tx-chart-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='admin/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='admin/js/plugins/simple-datatables.js') }}"></script>
+<script>
+    ['#pc-dt-simple-1', '#pc-dt-simple-2', '#pc-dt-simple-3'].forEach((tb) => {
+        const dt = new simpleDatatables.DataTable(tb, { 
+            sortable: true,
+            searchQuerySeparator: "",
+            columns: [
+                { select: [1, 2], type: "html" },
+                { select: 9, type: "html", sortable: false }
+            ],
+            labels: {
+                placeholder: "{{ _('Search...') }}",
+                perPage: "{{ _('entries per page') }}",
+                noRows: "{{ _('No entries found') }}",
+                noResults: "{{ _('No entries found') }}",
+                info: "{{ _('Showing {start} to {end} of {rows} entries') }}"
+            }
+        });
+
+        dt.on('datatable.init', () => {
+            const searchContainer = document.querySelector(tb).closest('.datatable-wrapper').querySelector('.datatable-search');
+            if (searchContainer && !searchContainer.querySelector('.add-new-btn')) {
+                const btn = document.createElement('a');
+                btn.href = "{{ url_for('admin_routes.transaction_new') }}";
+                btn.className = "btn btn-success ms-2 add-new-btn d-inline-flex align-items-center gap-1 text-nowrap";
+                btn.innerHTML = "<i class='ti ti-plus'></i> {{ _('Add New Transaction') }}";
+                searchContainer.appendChild(btn);
+                searchContainer.classList.add('d-flex', 'align-items-center');
+            }
+        });
+    });
+    
+    // Custom sparkline charts for 3 Cards
+    function renderSparkline(chartId, dataArray, color) {
+        var options = {
+            chart: { type: 'area', height: 60, sparkline: { enabled: true } },
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
+            series: [{ name: 'Value', data: dataArray }],
+            colors: [color],
+            tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function () { return '' } } } }
+        };
+        new ApexCharts(document.querySelector(chartId), options).render();
+    }
+    
+    // Simulate some growth data ending with the actual number
+    renderSparkline("#tx-chart-1", [10, 15, 25, 30, 40, {{ total_revenue }}], '#0d6efd');
+    renderSparkline("#tx-chart-2", [5, 8, 12, 10, 15, {{ paid_revenue }}], '#198754');
+    renderSparkline("#tx-chart-3", [2, 5, 4, 8, 10, {{ deposited_amount }}], '#ffc107');
+</script>
+{% endblock %}

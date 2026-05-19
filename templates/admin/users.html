@@ -1,0 +1,221 @@
+{% extends "_base.html" %}
+
+{% block breadcrumb %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="mb-0">{{ _('Users') }}</h5>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <ul class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_routes.dashboard') }}">{{ _('Home') }}</a></li>
+                    <li class="breadcrumb-item"><a href="#!">{{ _('User Management') }}</a></li>
+                    <li class="breadcrumb-item"><a href="#!">{{ _('Users') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <ul class="nav nav-tabs invoice-tab mb-3" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button
+                                class="nav-link active"
+                                id="analytics-tab-1"
+                                data-bs-toggle="tab"
+                                data-bs-target="#analytics-tab-1-pane"
+                                type="button"
+                                role="tab"
+                                aria-controls="analytics-tab-1-pane"
+                                aria-selected="true"
+                        >
+                                <span class="d-flex align-items-center gap-2">{{_('All')}} <span
+                                        class="avatar rounded-circle bg-light-primary">{{ users|length }}</span></span>
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div
+                            class="tab-pane fade show active"
+                            id="analytics-tab-1-pane"
+                            role="tabpanel"
+                            aria-labelledby="analytics-tab-1"
+                            tabindex="0"
+                    >
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="pc-dt-simple-1">
+                                <thead>
+                                <tr>
+                                    <th>{{ _('No.') }}</th>
+                                    <th>{{ _('Username') }}</th>
+                                    <th>{{ _('Email') }}</th>
+                                    <th>{{ _('Role') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th class="text-end">{{ _('Actions') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                <h6 class="mb-1"><a href="{{ url_for('admin_routes.user_detail', user_id=user.id) }}" 
+                                                        class="text-truncate w-100">{{ user.username }}</a>
+                                                </h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.email or '-'  }}</td>
+                                    <td>{{ user.role or '-'  }}</td>
+                                    <td><span class="badge bg-light-success">{{ _(user.status) if user.status else ''  }}</span></td>
+                                    <td class="text-end">
+                                        <ul class="list-inline mb-0">
+                                            <li class="list-inline-item"
+                                            ><a href="{{ url_for('admin_routes.user_detail', user_id=user.id) }}" class="avatar avatar-s btn-link-info btn-pc-default"><i
+                                                    class="ti ti-eye f-20"></i></a
+                                            ></li>
+                                            <li class="list-inline-item"
+                                            ><a href="{{ url_for('admin_routes.delete_user', user_id=user.id) }}" class="avatar avatar-s btn-link-danger btn-pc-default"><i
+                                                    class="ti ti-trash f-20"></i></a
+                                            ></li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-12">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Total Users') }}</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ users|length }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('accounts') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="users-chart-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Admin Users') }}</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ admin_users|length }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('managers') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="users-chart-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-0">
+                    <div class="card-body">
+                        <div class="mb-2 d-flex align-items-center justify-content-between gap-1">
+                            <h6 class="mb-0">{{ _('Staff/Members') }}</h6>
+                        </div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6">
+                                <h5 class="mb-2 mt-3">{{ staff_users|length }}</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="mb-0 text-muted d-flex align-items-center gap-2">{{ _('employees') }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="users-chart-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='admin/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='admin/js/plugins/simple-datatables.js') }}"></script>
+<script>
+    ['#pc-dt-simple-1'].forEach((tb) => {
+        const dt = new simpleDatatables.DataTable(tb, { 
+            sortable: true,
+            labels: {
+                placeholder: "{{ _('Search...') }}",
+                perPage: "{{ _('entries per page') }}",
+                noRows: "{{ _('No entries found') }}",
+                noResults: "{{ _('No entries found') }}",
+                info: "{{ _('Showing {start} to {end} of {rows} entries') }}"
+            }
+        });
+
+        dt.on('datatable.init', () => {
+            const searchContainer = document.querySelector(tb).closest('.datatable-wrapper').querySelector('.datatable-search');
+            if (searchContainer && !searchContainer.querySelector('.add-new-btn')) {
+                const btn = document.createElement('a');
+                btn.href = "{{ url_for('admin_routes.register') }}";
+                btn.className = "btn btn-success ms-2 add-new-btn d-inline-flex align-items-center gap-1 text-nowrap";
+                btn.innerHTML = "<i class='ti ti-plus'></i> {{ _('Add New User') }}";
+                searchContainer.appendChild(btn);
+                searchContainer.classList.add('d-flex', 'align-items-center');
+            }
+        });
+    });
+
+    // Custom sparkline charts for 3 Cards
+    function renderSparkline(chartId, dataArray, color) {
+        var options = {
+            chart: { type: 'area', height: 60, sparkline: { enabled: true } },
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
+            series: [{ name: 'Count', data: dataArray }],
+            colors: [color],
+            tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function () { return '' } } } }
+        };
+        new ApexCharts(document.querySelector(chartId), options).render();
+    }
+    
+    // Simulate some growth data ending with the actual number
+    renderSparkline("#users-chart-1", [2, 3, 5, 4, 8, {{ users|length }}], '#0d6efd');
+    renderSparkline("#users-chart-2", [1, 2, 2, 3, 4, {{ admin_users|length }}], '#198754');
+    renderSparkline("#users-chart-3", [1, 1, 3, 1, 4, {{ staff_users|length }}], '#ffc107');
+</script>
+{% endblock %}

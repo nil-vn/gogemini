@@ -1,0 +1,119 @@
+{% extends "_base.html" %}
+
+{% block breadcrumb %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="mb-0">{{ _('System Settings') }}</h5>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <ul class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin">{{ _('Home') }}</a></li>
+                    <li class="breadcrumb-item"><a href="javascript: void(0)">{{ _('System Settings') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeInput = document.getElementById('setting-theme');
+    const themeLabel = document.getElementById('theme-label');
+
+    const labels = {
+        dark: "{{ _('Dark Mode') }}",
+        light: "{{ _('Light Mode') }}"
+    };
+
+    if (themeToggle) {
+        // Sync with localStorage on load if available
+        const savedTheme = localStorage.getItem('pc-theme');
+        if (savedTheme) {
+            themeToggle.checked = (savedTheme === 'dark');
+            themeInput.value = savedTheme;
+            themeLabel.textContent = labels[savedTheme];
+        }
+
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                themeInput.value = 'dark';
+                themeLabel.textContent = labels.dark;
+                if (typeof layout_change === 'function') {
+                    layout_change('dark');
+                }
+            } else {
+                themeInput.value = 'light';
+                themeLabel.textContent = labels.light;
+                if (typeof layout_change === 'function') {
+                    layout_change('light');
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ _('System Settings') }}</h5>
+            </div>
+            <form action="{{ url_for('admin_routes.system') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Currency Setting -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="setting-currency">{{ _('Currency') }}</label>
+                            <select class="form-select" id="setting-currency" name="currency">
+                                <option value="VND" {% if settings.currency == 'VND' %}selected{% endif %}>VND</option>
+                                <option value="JPY" {% if settings.currency == 'JPY' %}selected{% endif %}>JPY</option>
+                            </select>
+                        </div>
+
+                        <!-- Theme Setting -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label d-block">{{ _('Theme') }}</label>
+                            <div class="ios-switch-container">
+                                <label class="ios-switch">
+                                    <input type="checkbox" id="theme-toggle" {% if settings.theme == 'dark' %}checked{% endif %}>
+                                    <span class="ios-switch-slider">
+                                        <i class="ph ph-moon switch-icon icon-moon"></i>
+                                        <i class="ph ph-sun switch-icon icon-sun"></i>
+                                    </span>
+                                </label>
+                                <span class="ms-2 fw-medium" id="theme-label">
+                                    {{ _('Dark Mode') if settings.theme == 'dark' else _('Light Mode') }}
+                                </span>
+                            </div>
+                            <input type="hidden" name="theme" id="setting-theme" value="{{ settings.theme }}">
+                        </div>
+
+                        <!-- Language Setting -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="setting-language">{{ _('Language') }}</label>
+                            <select class="form-select" id="setting-language" name="language">
+                                <option value="vi" {% if settings.language == 'vi' %}selected{% endif %}>{{ _('Vietnamese') }}</option>
+                                <option value="ja" {% if settings.language == 'ja' %}selected{% endif %}>{{ _('Japanese') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <button type="submit" class="btn btn-primary">{{ _('Save Changes') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
