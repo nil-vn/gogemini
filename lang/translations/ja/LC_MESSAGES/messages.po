@@ -1,0 +1,942 @@
+# Japanese translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-03-27 15:22+0900\n"
+"PO-Revision-Date: 2026-03-25 17:05+0900\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ja\n"
+"Language-Team: ja <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app/admin/controllers/__init__.py:40
+msgid "Logged in successfully!"
+msgstr "正常にログインしました！"
+
+#: app/admin/controllers/__init__.py:44
+msgid "Invalid username or password"
+msgstr "無効なユーザー名またはパスワード"
+
+#: app/admin/controllers/__init__.py:56
+msgid "You have been logged out"
+msgstr "ログアウトしました"
+
+#: app/admin/controllers/car.py:83
+msgid "Car added successfully!"
+msgstr "車が正常に追加されました！"
+
+#: app/admin/controllers/car.py:109 app/admin/controllers/car.py:167
+msgid "Car not found."
+msgstr "結果が見つかりません。"
+
+#: app/admin/controllers/car.py:134
+msgid "Car updated successfully!"
+msgstr "車が正常に更新されました！"
+
+#: app/admin/controllers/car.py:173
+msgid "Car deleted successfully!"
+msgstr "車が正常に削除されました！"
+
+#: app/admin/controllers/car.py:192
+msgid "Purchase added for car successfully!"
+msgstr "車両への購入情報の追加が完了しました。"
+
+#: app/admin/controllers/customer.py:56
+msgid "Customer added successfully!"
+msgstr "顧客が正常に追加されました！"
+
+#: app/admin/controllers/customer.py:76 app/admin/controllers/customer.py:137
+msgid "Customer not found."
+msgstr "顧客情報が見つかりません。"
+
+#: app/admin/controllers/customer.py:101
+msgid "Customer updated successfully!"
+msgstr "顧客が正常に更新されました！"
+
+#: app/admin/controllers/customer.py:121
+msgid "Purchase added for customer successfully!"
+msgstr "顧客の購入が正常に追加されました！"
+
+#: app/admin/controllers/customer.py:143
+msgid "Customer deleted successfully!"
+msgstr "顧客が正常に削除されました！"
+
+#: app/admin/controllers/transaction.py:63
+msgid "Transaction created successfully!"
+msgstr "取引が正常に作成されました！"
+
+#: app/admin/controllers/transaction.py:90
+#: app/admin/controllers/transaction.py:134
+msgid "Transaction not found."
+msgstr "取引が見つかりません。"
+
+#: app/admin/controllers/transaction.py:112
+msgid "Transaction updated successfully!"
+msgstr "取引が正常に更新されました！"
+
+#: app/admin/controllers/transaction.py:140
+msgid "Transaction deleted successfully!"
+msgstr "取引が正常に削除されました！"
+
+#: app/admin/controllers/user.py:22 app/admin/controllers/user.py:93
+msgid "Username or email already exists"
+msgstr "ユーザー名またはメールアドレスはすでに存在します"
+
+#: app/admin/controllers/user.py:38
+msgid "Account created successfully!"
+msgstr "アカウントが正常に作成されました！"
+
+#: app/admin/controllers/user.py:42
+msgid "Could not create user"
+msgstr "ユーザーを作成できませんでした"
+
+#: app/admin/controllers/user.py:67
+msgid "User not found."
+msgstr "ユーザーが見つかりません。"
+
+#: app/admin/controllers/user.py:73
+msgid "User deleted successfully!"
+msgstr "ユーザーが正常に削除されました！"
+
+#: app/admin/controllers/user.py:108
+msgid "User updated successfully!"
+msgstr "ユーザーが正常に更新されました！"
+
+#: app/admin/controllers/user.py:112
+msgid "Could not update user"
+msgstr "ユーザーを更新できませんでした"
+
+#: app/admin/models/transaction.py:40 app/utils/constants.py:35
+#: templates/admin/customer_detail.html:192
+#: templates/admin/customer_detail.html:343
+#: templates/admin/customer_new.html:110 templates/admin/transactions.html:107
+msgid "Paid"
+msgstr "支払済"
+
+#: app/admin/models/transaction.py:41 templates/admin/customer_detail.html:194
+#: templates/admin/customer_detail.html:344
+#: templates/admin/customer_new.html:111
+msgid "Wait to pay"
+msgstr "支払い待ち"
+
+#: app/admin/models/transaction.py:42 app/utils/constants.py:34
+#: templates/admin/transactions.html:102 templates/admin/transactions.html:174
+msgid "Deposited"
+msgstr "内金済"
+
+#: app/admin/services/forms.py:71 app/admin/services/forms.py:81
+#: templates/admin/car_detail.html:198 templates/admin/car_detail.html:305
+#: templates/admin/car_detail.html:405 templates/admin/car_new.html:103
+#: templates/admin/cars.html:52 templates/admin/customer_detail.html:188
+#: templates/admin/customer_detail.html:243
+#: templates/admin/customer_detail.html:340
+#: templates/admin/customer_new.html:107 templates/admin/customers.html:64
+#: templates/admin/transaction_detail.html:115
+#: templates/admin/transaction_new.html:102
+#: templates/admin/transactions.html:43 templates/admin/user_detail.html:107
+#: templates/admin/user_new.html:86 templates/admin/users.html:62
+msgid "Status"
+msgstr "状態"
+
+#: app/admin/services/forms.py:71 app/admin/services/forms.py:81
+#: templates/admin/user_detail.html:109 templates/admin/user_new.html:88
+msgid "Active"
+msgstr "有効"
+
+#: app/admin/services/forms.py:71 app/admin/services/forms.py:81
+#: templates/admin/user_detail.html:110 templates/admin/user_new.html:89
+msgid "Inactive"
+msgstr "無効"
+
+#: app/utils/constants.py:24 templates/admin/cars.html:119
+msgid "Sold"
+msgstr "販売済"
+
+#: app/utils/constants.py:25 templates/admin/cars.html:113
+msgid "Awaiting Delivery"
+msgstr "納車待ち"
+
+#: app/utils/constants.py:26
+msgid "Available"
+msgstr "利用可能"
+
+#: app/utils/constants.py:29 templates/admin/cars.html:125
+msgid "Refurbished"
+msgstr "塗装済・クリーニング完了"
+
+#: app/utils/constants.py:30 templates/admin/cars.html:131
+msgid "Not Refurbished"
+msgstr "未塗装・未クリーニング"
+
+#: app/utils/constants.py:31 templates/admin/cars.html:137
+msgid "Refurbished/Pending Cleaning"
+msgstr "塗装済・クリーニング待ち"
+
+
+#: templates/admin/_auth.html:6 templates/admin/login.html:18
+#: templates/admin/login.html:33
+msgid "Login"
+msgstr "ログイン"
+
+#: templates/admin/_header.html:54 templates/admin/system.html:106
+msgid "Vietnamese"
+msgstr "ベトナム語"
+
+#: templates/admin/_header.html:57 templates/admin/system.html:107
+msgid "Japanese"
+msgstr "日本語"
+
+#: templates/admin/_header.html:295
+msgid "Sign Out"
+msgstr "サインアウト"
+
+#: templates/admin/_sidebar.html:12
+msgid "Navigation"
+msgstr "ナビゲーション"
+
+#: templates/admin/_sidebar.html:19 templates/admin/search.html:9
+#: templates/admin/search.html:15 templates/admin/search.html:29
+#: templates/admin/search.html:39
+msgid "Search"
+msgstr "検索"
+
+#: templates/admin/_sidebar.html:27 templates/admin/dashboard.html:9
+#: templates/admin/dashboard.html:15
+msgid "Dashboard"
+msgstr "ダッシュボード"
+
+#: templates/admin/_sidebar.html:35 templates/admin/car_detail.html:16
+#: templates/admin/car_new.html:15 templates/admin/cars.html:15
+msgid "Car Management"
+msgstr "車両管理"
+
+#: templates/admin/_sidebar.html:39 templates/admin/cars.html:9
+#: templates/admin/cars.html:16
+msgid "Car List"
+msgstr "車両一覧"
+
+#: templates/admin/_sidebar.html:40 templates/admin/car_new.html:9
+#: templates/admin/car_new.html:16 templates/admin/cars.html:261
+msgid "Add New Car"
+msgstr "新規車両登録"
+
+#: templates/admin/_sidebar.html:48 templates/admin/customer_new.html:15
+#: templates/admin/customers.html:15
+msgid "Customer Management"
+msgstr "顧客管理"
+
+#: templates/admin/_sidebar.html:52 templates/admin/customers.html:9
+#: templates/admin/customers.html:16
+msgid "Customers"
+msgstr "顧客"
+
+#: templates/admin/_sidebar.html:53 templates/admin/customer_new.html:9
+#: templates/admin/customer_new.html:16 templates/admin/customers.html:202
+msgid "Add New Customer"
+msgstr "新規顧客登録"
+
+#: templates/admin/_sidebar.html:61 templates/admin/transaction_detail.html:15
+#: templates/admin/transaction_new.html:15 templates/admin/transactions.html:15
+msgid "Sale Management"
+msgstr "販売管理"
+
+#: templates/admin/_sidebar.html:65 templates/admin/transactions.html:9
+#: templates/admin/transactions.html:16
+msgid "Transactions"
+msgstr "取引"
+
+#: templates/admin/_sidebar.html:66 templates/admin/transaction_new.html:37
+msgid "Add Transaction"
+msgstr "新規取引"
+
+#: templates/admin/_sidebar.html:70
+msgid "Setting"
+msgstr "設定"
+
+#: templates/admin/_sidebar.html:78 templates/admin/user_detail.html:15
+#: templates/admin/user_new.html:15 templates/admin/users.html:15
+msgid "User Management"
+msgstr "ユーザー管理"
+
+#: templates/admin/_sidebar.html:82 templates/admin/users.html:9
+#: templates/admin/users.html:16
+msgid "Users"
+msgstr "ユーザー"
+
+#: templates/admin/_sidebar.html:83 templates/admin/user_new.html:9
+#: templates/admin/user_new.html:16 templates/admin/users.html:196
+msgid "Add New User"
+msgstr "新規ユーザー登録"
+
+#: templates/admin/_sidebar.html:91
+msgid "System"
+msgstr "システム"
+
+#: templates/admin/car_detail.html:9 templates/admin/car_detail.html:17
+#: templates/admin/customer_detail.html:9
+#: templates/admin/customer_detail.html:16
+#: templates/admin/transaction_detail.html:9
+#: templates/admin/transaction_detail.html:16
+#: templates/admin/user_detail.html:9 templates/admin/user_detail.html:16
+msgid "Detail"
+msgstr "詳細"
+
+#: templates/admin/car_detail.html:14 templates/admin/car_new.html:14
+#: templates/admin/cars.html:14 templates/admin/customer_detail.html:14
+#: templates/admin/customer_new.html:14 templates/admin/customers.html:14
+#: templates/admin/dashboard.html:14 templates/admin/search.html:14
+#: templates/admin/system.html:14 templates/admin/transaction_detail.html:14
+#: templates/admin/transaction_new.html:14 templates/admin/transactions.html:14
+#: templates/admin/user_detail.html:14 templates/admin/user_new.html:14
+#: templates/admin/users.html:14
+msgid "Home"
+msgstr "ホーム"
+
+#: templates/admin/car_detail.html:54 templates/admin/car_detail.html:225
+#: templates/admin/car_new.html:125 templates/admin/cars.html:48
+msgid "Branch"
+msgstr "メーカー"
+
+#: templates/admin/car_detail.html:58 templates/admin/cars.html:50
+msgid "Imported Date"
+msgstr "輸入日"
+
+#: templates/admin/car_detail.html:62 templates/admin/car_detail.html:158
+msgid "Year Of Manufacture"
+msgstr "製造年"
+
+#: templates/admin/car_detail.html:69 templates/admin/car_detail.html:220
+#: templates/admin/car_new.html:121
+msgid "Color"
+msgstr "色"
+
+#: templates/admin/car_detail.html:73
+msgid "Traded by"
+msgstr "販売元"
+
+#: templates/admin/car_detail.html:84 templates/admin/car_detail.html:129
+msgid "Car information"
+msgstr "車両情報"
+
+#: templates/admin/car_detail.html:90 templates/admin/car_detail.html:292
+msgid "Customer List"
+msgstr "顧客一覧"
+
+#: templates/admin/car_detail.html:96 templates/admin/customer_detail.html:80
+#: templates/admin/transaction_new.html:9
+#: templates/admin/transaction_new.html:16
+#: templates/admin/transactions.html:223
+msgid "Add New Transaction"
+msgstr "新規取引登録"
+
+#: templates/admin/car_detail.html:104 templates/admin/car_new.html:158
+msgid "Car Images"
+msgstr "車両画像"
+
+#: templates/admin/car_detail.html:110 templates/admin/customer_detail.html:94
+msgid "No images available."
+msgstr "画像がありません。"
+
+#: templates/admin/car_detail.html:133 templates/admin/customer_detail.html:116
+#: templates/admin/transaction_detail.html:42
+#: templates/admin/user_detail.html:71
+msgid "Update"
+msgstr "更新"
+
+#: templates/admin/car_detail.html:134 templates/admin/customer_detail.html:117
+#: templates/admin/transaction_detail.html:43
+#: templates/admin/user_detail.html:72
+msgid "Reset"
+msgstr "リセット"
+
+#: templates/admin/car_detail.html:143 templates/admin/car_new.html:50
+#: templates/admin/customer_detail.html:126
+#: templates/admin/customer_new.html:51 templates/admin/customers.html:59
+msgid "Name"
+msgstr "名前"
+
+#: templates/admin/car_detail.html:153 templates/admin/car_new.html:59
+msgid "Model"
+msgstr "モデル"
+
+#: templates/admin/car_detail.html:164 templates/admin/car_new.html:69
+msgid "Chassis No. (VIN)"
+msgstr "シャーシ番号（VIN）"
+
+#: templates/admin/car_detail.html:169 templates/admin/car_new.html:73
+msgid "Imported date"
+msgstr "輸入日"
+
+#: templates/admin/car_detail.html:180 templates/admin/car_new.html:83
+msgid "Purchase Price"
+msgstr "購入価格"
+
+#: templates/admin/car_detail.html:186 templates/admin/car_new.html:87
+msgid "Inspection From"
+msgstr "車検開始日"
+
+#: templates/admin/car_detail.html:200 templates/admin/car_new.html:105
+msgid "Product status"
+msgstr "製品の状態"
+
+#: templates/admin/car_detail.html:210 templates/admin/car_new.html:112
+#: templates/admin/cars.html:49
+msgid "Situation"
+msgstr "状況"
+
+#: templates/admin/car_detail.html:212 templates/admin/car_new.html:114
+msgid "Select a situation"
+msgstr "状況を選択"
+
+#: templates/admin/car_detail.html:227 templates/admin/car_new.html:127
+msgid "Select a branch"
+msgstr "メーカーを選択"
+
+#: templates/admin/car_detail.html:235 templates/admin/car_new.html:134
+msgid "License Plate No."
+msgstr "ナンバープレート番号"
+
+#: templates/admin/car_detail.html:241 templates/admin/car_new.html:97
+msgid "Traded Company"
+msgstr "取扱会社"
+
+#: templates/admin/car_detail.html:246
+msgid "Expected Selling Price"
+msgstr "予定販売価格"
+
+#: templates/admin/car_detail.html:252 templates/admin/car_new.html:142
+msgid "Inspection To"
+msgstr "車検終了日"
+
+#: templates/admin/car_detail.html:263 templates/admin/car_detail.html:416
+#: templates/admin/car_new.html:152 templates/admin/customer_detail.html:200
+#: templates/admin/customer_detail.html:350
+#: templates/admin/customer_new.html:117
+#: templates/admin/transaction_detail.html:126
+#: templates/admin/transaction_new.html:113
+msgid "Note"
+msgstr "備考"
+
+#: templates/admin/car_detail.html:270 templates/admin/customer_detail.html:207
+msgid "Add More Images"
+msgstr "画像を追加"
+
+#: templates/admin/car_detail.html:273 templates/admin/customer_detail.html:210
+msgid "Drag and drop more images here or click to select"
+msgstr "ここに画像をドラッグ＆ドロップするか、クリックして選択してください"
+
+#: templates/admin/car_detail.html:274 templates/admin/car_new.html:162
+#: templates/admin/customer_detail.html:211
+#: templates/admin/customer_new.html:128
+msgid "Supports JPG, PNG, WEBP"
+msgstr "サポート形式: JPG, PNG, WEBP"
+
+#: templates/admin/car_detail.html:301 templates/admin/customer_detail.html:239
+msgid "Transaction No."
+msgstr "取引番号"
+
+#: templates/admin/car_detail.html:302
+#: templates/admin/transaction_detail.html:53
+#: templates/admin/transactions.html:36
+msgid "Customer Name"
+msgstr "顧客名"
+
+#: templates/admin/car_detail.html:303 templates/admin/customer_detail.html:241
+msgid "Purchase date"
+msgstr "購入日"
+
+#: templates/admin/car_detail.html:304 templates/admin/car_detail.html:397
+#: templates/admin/customer_detail.html:242
+#: templates/admin/customer_detail.html:332
+#: templates/admin/transaction_new.html:88
+msgid "Unit Price"
+msgstr "単価"
+
+#: templates/admin/car_detail.html:345
+msgid "No customer found. Create a customer first."
+msgstr "顧客が見つかりません。まず顧客を作成してください。"
+
+#: templates/admin/car_detail.html:347
+msgid "Create New Customer"
+msgstr "新規顧客作成"
+
+#: templates/admin/car_detail.html:359
+msgid "Add Customer Purchase"
+msgstr "顧客の購入を追加"
+
+#: templates/admin/car_detail.html:363 templates/admin/customer_detail.html:298
+#: templates/admin/transaction_new.html:41 templates/admin/user_new.html:41
+msgid "Add"
+msgstr "追加"
+
+#: templates/admin/car_detail.html:364 templates/admin/car_new.html:41
+#: templates/admin/customer_detail.html:299
+#: templates/admin/customer_new.html:42 templates/admin/transaction_new.html:42
+#: templates/admin/user_new.html:42
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: templates/admin/car_detail.html:374 templates/admin/customer_detail.html:15
+#: templates/admin/transaction_new.html:52
+msgid "Customer"
+msgstr "顧客"
+
+#: templates/admin/car_detail.html:377
+#: templates/admin/transaction_detail.html:56
+#: templates/admin/transaction_new.html:55
+msgid "Select A Customer"
+msgstr "顧客を選択"
+
+#: templates/admin/car_detail.html:386 templates/admin/customer_detail.html:321
+#: templates/admin/transaction_detail.html:87
+#: templates/admin/transaction_new.html:76 templates/admin/transactions.html:38
+msgid "Purchase Date"
+msgstr "購入日"
+
+#: templates/admin/car_detail.html:407 templates/admin/customer_detail.html:190
+#: templates/admin/customer_detail.html:342
+#: templates/admin/customer_new.html:109
+#: templates/admin/transaction_detail.html:117
+#: templates/admin/transaction_new.html:104
+msgid "Customer status"
+msgstr "顧客状況"
+
+#: templates/admin/car_detail.html:482 templates/admin/customer_detail.html:403
+msgid "Delete Image"
+msgstr "画像を削除"
+
+#: templates/admin/car_detail.html:510 templates/admin/customer_detail.html:431
+msgid "Are you sure you want to delete this image?"
+msgstr "本当にこの画像を削除しますか？"
+
+#: templates/admin/car_detail.html:528 templates/admin/customer_detail.html:449
+msgid "Failed to delete the image."
+msgstr "画像の削除に失敗しました。"
+
+#: templates/admin/car_new.html:36
+msgid "Add a new car"
+msgstr "新規車両を追加"
+
+#: templates/admin/car_new.html:40 templates/admin/customer_new.html:41
+msgid "Create"
+msgstr "作成"
+
+#: templates/admin/car_new.html:63
+msgid "Year Of Manufactoring"
+msgstr "製造年"
+
+#: templates/admin/car_new.html:138
+msgid "Sale Price"
+msgstr "販売価格"
+
+#: templates/admin/car_new.html:161 templates/admin/customer_new.html:127
+msgid "Drag and drop images here or click to select"
+msgstr "ここに画像をドラッグ＆ドロップするか、クリックして選択してください"
+
+#: templates/admin/cars.html:46 templates/admin/customers.html:58
+#: templates/admin/transactions.html:35 templates/admin/users.html:58
+msgid "No."
+msgstr "番号"
+
+#: templates/admin/cars.html:47
+msgid "Name/Model"
+msgstr "名前／モデル"
+
+#: templates/admin/cars.html:51 templates/admin/transaction_detail.html:100
+#: templates/admin/transactions.html:39
+msgid "Selling Price"
+msgstr "販売価格"
+
+#: templates/admin/cars.html:53 templates/admin/customers.html:65
+#: templates/admin/users.html:63
+msgid "Actions"
+msgstr "操作"
+
+#: templates/admin/cars.html:101 templates/admin/customers.html:41
+#: templates/admin/transactions.html:97 templates/admin/users.html:41
+msgid "All"
+msgstr "すべて"
+
+#: templates/admin/cars.html:107
+msgid "Available (inc. Awaiting)"
+msgstr "利用可能（納車待ち含む）"
+
+#: templates/admin/cars.html:174 templates/admin/dashboard.html:57
+msgid "Total Cars"
+msgstr "総車両数"
+
+#: templates/admin/cars.html:180
+msgid "all situations"
+msgstr "全状況"
+
+#: templates/admin/cars.html:195
+msgid "Available Cars"
+msgstr "販売可能車両"
+
+#: templates/admin/cars.html:201
+msgid "ready or awaiting"
+msgstr "準備完了または待機中"
+
+#: templates/admin/cars.html:216
+msgid "Sold Cars"
+msgstr "販売済車両"
+
+#: templates/admin/cars.html:222
+msgid "paid transactions"
+msgstr "支払済取引"
+
+#: templates/admin/cars.html:247 templates/admin/customers.html:188
+#: templates/admin/transactions.html:209 templates/admin/users.html:182
+msgid "Search..."
+msgstr "検索..."
+
+#: templates/admin/cars.html:248 templates/admin/customers.html:189
+#: templates/admin/transactions.html:210 templates/admin/users.html:183
+msgid "entries per page"
+msgstr "件表示"
+
+#: templates/admin/cars.html:249 templates/admin/cars.html:250
+#: templates/admin/customers.html:190 templates/admin/customers.html:191
+#: templates/admin/transactions.html:211 templates/admin/transactions.html:212
+#: templates/admin/users.html:184 templates/admin/users.html:185
+msgid "No entries found"
+msgstr "データがありません"
+
+#: templates/admin/cars.html:251 templates/admin/customers.html:192
+#: templates/admin/transactions.html:213 templates/admin/users.html:186
+#, python-brace-format
+msgid "Showing {start} to {end} of {rows} entries"
+msgstr "{rows}件中 {start}〜{end}件を表示"
+
+#: templates/admin/customer_detail.html:48
+#: templates/admin/customer_detail.html:174
+#: templates/admin/customer_new.html:94 templates/admin/customers.html:61
+msgid "Facebook"
+msgstr "フェイスブック"
+
+#: templates/admin/customer_detail.html:52
+#: templates/admin/customer_detail.html:157
+#: templates/admin/customer_new.html:78 templates/admin/customers.html:62
+msgid "Phone"
+msgstr "電話番号"
+
+#: templates/admin/customer_detail.html:56
+#: templates/admin/customer_detail.html:150
+#: templates/admin/customer_new.html:72 templates/admin/customers.html:63
+msgid "Address"
+msgstr "住所"
+
+#: templates/admin/customer_detail.html:66
+#: templates/admin/customer_detail.html:112
+#: templates/admin/customer_new.html:37
+msgid "Customer information"
+msgstr "顧客情報"
+
+#: templates/admin/customer_detail.html:73
+#: templates/admin/customer_detail.html:230
+msgid "Purchased List"
+msgstr "購入履歴"
+
+#: templates/admin/customer_detail.html:88
+#: templates/admin/customer_new.html:124
+msgid "Customer Images"
+msgstr "顧客画像"
+
+#: templates/admin/customer_detail.html:138
+#: templates/admin/customer_new.html:62
+msgid "Gender"
+msgstr "性別"
+
+#: templates/admin/customer_detail.html:140
+#: templates/admin/customer_new.html:64
+msgid "Unknown"
+msgstr "不明"
+
+#: templates/admin/customer_detail.html:142
+#: templates/admin/customer_new.html:65
+msgid "Male"
+msgstr "男性"
+
+#: templates/admin/customer_detail.html:144
+#: templates/admin/customer_new.html:66
+msgid "Female"
+msgstr "女性"
+
+#: templates/admin/customer_detail.html:164
+#: templates/admin/customer_new.html:84
+msgid "Birthday"
+msgstr "生年月日"
+
+#: templates/admin/customer_detail.html:181
+#: templates/admin/customer_new.html:101
+msgid "Lead Source"
+msgstr "リード元"
+
+#: templates/admin/customer_detail.html:240
+#: templates/admin/transactions.html:37
+msgid "Car Name"
+msgstr "車名"
+
+#: templates/admin/customer_detail.html:294
+msgid "Add Purchase"
+msgstr "購入を追加"
+
+#: templates/admin/customer_detail.html:309
+#: templates/admin/transaction_detail.html:70
+#: templates/admin/transaction_new.html:64
+msgid "Car"
+msgstr "車"
+
+#: templates/admin/customer_detail.html:312
+#: templates/admin/transaction_detail.html:73
+#: templates/admin/transaction_new.html:67
+msgid "Select A Car"
+msgstr "車を選択"
+
+#: templates/admin/customers.html:60
+msgid "Birth Day"
+msgstr "誕生日"
+
+#: templates/admin/customers.html:114 templates/admin/dashboard.html:29
+msgid "Total Customers"
+msgstr "総顧客数"
+
+#: templates/admin/customers.html:120
+msgid "profiles"
+msgstr "プロファイル"
+
+#: templates/admin/customers.html:135
+msgid "Active Customers"
+msgstr "アクティブな顧客"
+
+#: templates/admin/customers.html:141
+msgid "with purchases"
+msgstr "購入あり"
+
+#: templates/admin/customers.html:156
+msgid "Potential Leads"
+msgstr "見込み客"
+
+#: templates/admin/customers.html:162
+msgid "no purchases yet"
+msgstr "まだ購入なし"
+
+#: templates/admin/dashboard.html:29 templates/admin/dashboard.html:43
+#: templates/admin/dashboard.html:57
+msgid "This Month"
+msgstr "今月"
+
+#: templates/admin/dashboard.html:32 templates/admin/dashboard.html:46
+#: templates/admin/dashboard.html:60
+msgid "Monthly Increase"
+msgstr "月間増加数"
+
+#: templates/admin/dashboard.html:43
+msgid "Total Transactions"
+msgstr "総取引数"
+
+#: templates/admin/dashboard.html:71
+msgid "Revenue (Last 6 Months)"
+msgstr "売上（過去6ヶ月）"
+
+#: templates/admin/dashboard.html:84
+msgid "Car Status Distribution"
+msgstr "車両状態の分布"
+
+#: templates/admin/login.html:20 templates/admin/user_detail.html:81
+#: templates/admin/user_new.html:52 templates/admin/users.html:59
+msgid "Username"
+msgstr "ユーザー名"
+
+#: templates/admin/login.html:23 templates/admin/user_detail.html:100
+#: templates/admin/user_new.html:65
+msgid "Password"
+msgstr "パスワード"
+
+#: templates/admin/login.html:29
+msgid "Remember me"
+msgstr "ログイン状態を保持する"
+
+#: templates/admin/search.html:49
+msgid "Result for"
+msgstr "検索結果:"
+
+#: templates/admin/search.html:70
+msgid "No results found."
+msgstr "結果が見つかりません。"
+
+#: templates/admin/system.html:9 templates/admin/system.html:15
+#: templates/admin/system.html:69
+msgid "System Settings"
+msgstr "システム設定"
+
+#: templates/admin/system.html:31 templates/admin/system.html:96
+msgid "Dark Mode"
+msgstr "ダークモード"
+
+#: templates/admin/system.html:32 templates/admin/system.html:96
+msgid "Light Mode"
+msgstr "ライトモード"
+
+#: templates/admin/system.html:77
+msgid "Currency"
+msgstr "通貨"
+
+#: templates/admin/system.html:86
+msgid "Theme"
+msgstr "テーマ"
+
+#: templates/admin/system.html:104
+msgid "Language"
+msgstr "言語"
+
+#: templates/admin/system.html:113
+msgid "Save Changes"
+msgstr "変更を保存"
+
+#: templates/admin/transaction_detail.html:38
+msgid "Transaction Detail"
+msgstr "取引詳細"
+
+#: templates/admin/transaction_detail.html:63
+msgid "For more detail about the customer"
+msgstr "顧客の詳細情報はこちら"
+
+#: templates/admin/transaction_detail.html:80
+msgid "For more detail about the car"
+msgstr "車両の詳細情報はこちら"
+
+#: templates/admin/transaction_detail.html:107
+#: templates/admin/transaction_new.html:95
+msgid "Deposit Amount"
+msgstr "内金額"
+
+#: templates/admin/transaction_detail.html:132
+#: templates/admin/transaction_new.html:119
+msgid "Other Transactions (Accessories/Services)"
+msgstr "その他の取引（アクセサリー/サービス）"
+
+#: templates/admin/transaction_detail.html:137
+#: templates/admin/transaction_new.html:124
+msgid "Accessory/Service Name"
+msgstr "アクセサリー/サービス名"
+
+#: templates/admin/transaction_detail.html:138
+#: templates/admin/transaction_new.html:125
+msgid "Price"
+msgstr "価格"
+
+#: templates/admin/transaction_detail.html:160
+#: templates/admin/transaction_new.html:137
+msgid "Add Item"
+msgstr "項目を追加"
+
+#: templates/admin/transaction_detail.html:164
+#: templates/admin/transactions.html:41
+msgid "Other Transaction"
+msgstr "その他取引"
+
+#: templates/admin/transaction_detail.html:168
+#: templates/admin/transactions.html:42
+msgid "Total Amount"
+msgstr "合計金額"
+
+#: templates/admin/transactions.html:40
+msgid "Deposit"
+msgstr "内金"
+
+#: templates/admin/transactions.html:44
+msgid "Action"
+msgstr "操作"
+
+#: templates/admin/transactions.html:132
+msgid "Total Revenue"
+msgstr "総収入"
+
+#: templates/admin/transactions.html:138
+msgid "estimated"
+msgstr "推定"
+
+#: templates/admin/transactions.html:153
+msgid "Paid Revenue"
+msgstr "受領済収入"
+
+#: templates/admin/transactions.html:159
+msgid "collected"
+msgstr "回収済み"
+
+#: templates/admin/transactions.html:180
+msgid "holding"
+msgstr "保留中"
+
+#: templates/admin/user_detail.html:48 templates/admin/user_detail.html:93
+#: templates/admin/user_new.html:59 templates/admin/users.html:60
+msgid "Email"
+msgstr "メール"
+
+#: templates/admin/user_detail.html:67
+msgid "User information"
+msgstr "ユーザー情報"
+
+#: templates/admin/user_detail.html:116 templates/admin/users.html:61
+msgid "Role"
+msgstr "役割"
+
+#: templates/admin/user_detail.html:118 templates/admin/user_new.html:79
+msgid "Guest"
+msgstr "ゲスト"
+
+#: templates/admin/user_detail.html:121 templates/admin/user_new.html:80
+msgid "Admin"
+msgstr "管理者"
+
+#: templates/admin/user_new.html:37
+msgid "Add User"
+msgstr "ユーザーを追加"
+
+#: templates/admin/user_new.html:71
+msgid "Confirm Password"
+msgstr "パスワード確認"
+
+#: templates/admin/user_new.html:77
+msgid "User Role"
+msgstr "ユーザー権限"
+
+#: templates/admin/users.html:110
+msgid "Total Users"
+msgstr "総ユーザー数"
+
+#: templates/admin/users.html:116
+msgid "accounts"
+msgstr "アカウント"
+
+#: templates/admin/users.html:131
+msgid "Admin Users"
+msgstr "管理者"
+
+#: templates/admin/users.html:137
+msgid "managers"
+msgstr "マネージャー"
+
+#: templates/admin/users.html:152
+msgid "Staff/Members"
+msgstr "スタッフ"
+
+#: templates/admin/users.html:158
+msgid "employees"
+msgstr "従業員"
+
+#~ msgid "Settings saved successfully!"
+#~ msgstr "設定が正常に保存されました！"
+
+msgid "Image not found"
+msgstr "画像が見つかりません"

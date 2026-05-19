@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+flask_bcrypt
+flask_wtf
+flask_login
+Flask-APScheduler
+APScheduler
+Flask-Babel
+jsonify
+flask-migrate
+wtforms[email]
