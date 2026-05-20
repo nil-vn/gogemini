@@ -7,6 +7,7 @@
   export let pageSize = 10;
   export let onDetail: (id: string) => void;
   export let onDelete: (id: string) => void;
+  export let t: (key: string, vars?: Record<string, string | number>) => string;
 
   function getId(item: ModuleRecord) {
     return String(item.id ?? '');
@@ -14,21 +15,21 @@
 </script>
 
 <section>
-  <h4>{title} list</h4>
-  <p>total: {total} | page: {page} | page size: {pageSize}</p>
+  <h4>{t('tableList', { title })}</h4>
+  <p>{t('tableTotal', { total, page, pageSize })}</p>
   <table>
-    <thead><tr><th>id</th><th>data</th><th>actions</th></tr></thead>
+    <thead><tr><th>{t('id')}</th><th>{t('data')}</th><th>{t('actions')}</th></tr></thead>
     <tbody>
       {#if items.length === 0}
-        <tr><td colspan="3">No records</td></tr>
+        <tr><td colspan="3">{t('noRecords')}</td></tr>
       {:else}
         {#each items as item}
           <tr>
             <td>{getId(item)}</td>
             <td><pre>{JSON.stringify(item, null, 2)}</pre></td>
             <td>
-              <button on:click={() => onDetail(getId(item))}>Detail</button>
-              <button on:click={() => onDelete(getId(item))}>Delete</button>
+              <button on:click={() => onDetail(getId(item))}>{t('detail')}</button>
+              <button on:click={() => onDelete(getId(item))}>{t('delete')}</button>
             </td>
           </tr>
         {/each}
