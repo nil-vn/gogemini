@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"gogemini/internal/domain"
 )
@@ -220,6 +221,30 @@ func (r AdminRepo) Dashboard() (map[string]int64, error) {
 		}
 		counts[k] = c
 	}
+
+	var totalRevenue int64
+	if err := r.DB.QueryRow("SELECT COALESCE(SUM(selling_price),0) FROM `transaction` WHERE status IN ('PAID', 'DEPOSITED')").Scan(&totalRevenue); err != nil {
+		return nil, fmt.Errorf("total_revenue: %w", err)
+	}
+	counts["total_revenue"] = totalRevenue
+
+	now := time.Now().UTC()
+	for i := 5; i >= 0; i-- {
+		monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -i, 0)
+		nextMonthStart := monthStart.AddDate(0, 1, 0)
+		label := monthStart.Format("01/2006")
+
+		var monthRevenue int64
+		if err := r.DB.QueryRow(
+			"SELECT COALESCE(SUM(selling_price),0) FROM `transaction` WHERE created_at >= ? AND created_at < ?",
+			monthStart,
+			nextMonthStart,
+		).Scan(&monthRevenue); err != nil {
+			return nil, fmt.Errorf("revenue_6_months.%s: %w", label, err)
+		}
+		counts["revenue_"+label] = monthRevenue
+	}
+
 	return counts, nil
 }
 func (r AdminRepo) SearchAll(q string) (map[string]any, error) {
