@@ -665,3 +665,32 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Chưa có Windows runner trong môi trường hiện tại để chạy end-to-end lệnh PowerShell/NSSM thực tế.
 - Next Action:
   - Thực thi dry-run trực tiếp trên máy Windows theo runbook để thu evidence runtime thực tế.
+
+## 2026-05-20 | E5 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Chuẩn hóa cutover script để phát sinh evidence logs, hỗ trợ tham số skip build/migrate phục vụ dry-run.
+  - Chuẩn hóa rollback script để ghi log drill và thời gian phục hồi (RTO thực tế của bài drill).
+  - Bổ sung execution record cho E5 và guidance mapping evidence vào go-live checklist.
+- Files changed:
+  - scripts/cutover.ps1
+  - scripts/rollback.ps1
+  - docs/migration-e5-cutover-hypercare.md
+  - docs/phase5-go-live-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+  - `rg -n "E5|Evidence Notes|cutover-|rollback-" docs scripts` => PASS
+- DoD Mapping:
+  - [ ] Không có incident P1/P2 trong 24h đầu sau cutover. (chưa thể xác nhận khi chưa chạy cutover production/staging window)
+- Related Outstanding Checklist Items:
+  - Phase 5 / Dry-run cutover trên staging theo playbook production.
+  - Phase 5 / Rollback drill thực tế và đo thời gian phục hồi.
+  - Phase 5 / Go-live checklist được tick bằng evidence thực tế.
+  - Phase 5 / Hypercare plan 24-72h có owner, dashboard, rollback trigger.
+- Risks/Blockers:
+  - Blocker môi trường: chưa có cửa sổ cutover staging/production để thu thập bằng chứng 24h và xác nhận không có P1/P2 incident.
+- Next Action:
+  - Chạy `scripts/cutover.ps1` trên staging, theo dõi 24h, append evidence vào checklist + traceability để đóng E5 hoàn toàn.
