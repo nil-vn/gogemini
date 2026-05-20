@@ -525,3 +525,33 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - `LoginForm` placeholder/button vẫn hardcoded ở mức tối thiểu, không thuộc phần “nội dung chính” admin module; có thể đưa vào đợt i18n polish tiếp theo nếu cần full coverage.
 - Next Action:
   - Chuyển D5 để hoàn thiện upload UI + preview.
+
+## 2026-05-20 | D5 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Tích hợp Upload UI vào admin flow cho 2 module `cars`/`customers` theo đúng phạm vi D5, chỉ hiển thị upload form khi đang ở 2 module này.
+  - Hoàn thiện image preview phía client bằng object URL ngay sau khi chọn file.
+  - Bổ sung xử lý submit upload gọi API Go (`/api/admin/upload/:module`) với multipart FormData và phản hồi message thành công/lỗi để cover UX trạng thái upload.
+- Files changed:
+  - frontend/src/App.svelte
+  - frontend/src/components/UploadForm.svelte
+  - frontend/src/lib/api.ts
+  - frontend/src/lib/i18n.ts
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `npm --prefix frontend ci` => PASS
+  - `npm --prefix frontend run check` => PASS
+  - `npm --prefix frontend run build` => PASS
+  - `npm --prefix frontend run lint` => PASS
+- DoD Mapping:
+  - [x] Chọn file, preview, handle lỗi upload.
+  - [x] Người dùng upload ảnh trong form car/customer thành công.
+- Related Outstanding Checklist Items:
+  - Phase 3 / Hoàn thiện flow CRUD đầy đủ cho từng module (phần upload trong form cars/customers).
+  - Phase 3 / Đồng bộ validation FE-BE và xử lý UX states (loading/empty/error/retry) — phạm vi D5 xử lý error state cơ bản cho upload request.
+- Risks/Blockers:
+  - Chưa có frontend integration/e2e test tự động cho upload flow ở D5; sẽ được cover đầy đủ trong E1.
+- Next Action:
+  - Chuyển E1 để tự động hóa critical flow gồm upload bằng Playwright.

@@ -43,6 +43,9 @@ const dictionaries: Record<Locale, Dict> = {
     searchLabel: 'Search',
     searchPlaceholder: 'Search all modules',
     searchResults: 'Global search results',
+    uploadImage: 'Upload image',
+    upload: 'Upload',
+    uploadSuccess: 'Image uploaded successfully',
     dark: 'dark',
     light: 'light'
   },
@@ -84,6 +87,9 @@ const dictionaries: Record<Locale, Dict> = {
     searchLabel: 'Tìm kiếm',
     searchPlaceholder: 'Tìm toàn bộ module',
     searchResults: 'Kết quả tìm kiếm tổng',
+    uploadImage: 'Tải ảnh lên',
+    upload: 'Tải lên',
+    uploadSuccess: 'Tải ảnh thành công',
     dark: 'tối',
     light: 'sáng'
   }

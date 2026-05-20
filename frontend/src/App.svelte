@@ -7,6 +7,7 @@
   import LoginForm from './components/LoginForm.svelte';
   import ModuleTable from './components/ModuleTable.svelte';
   import SettingsForm from './components/SettingsForm.svelte';
+  import UploadForm from './components/UploadForm.svelte';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
   const moduleSet = new Set<ModuleKey>(modules);
@@ -120,6 +121,13 @@
     if (result) { message = id ? tt('recordUpdated') : tt('recordCreated'); clearEditor(); await loadModule(module); }
   }
 
+  async function uploadImage(payload: { module: 'cars' | 'customers'; file: File }) {
+    const form = new FormData();
+    form.append('image', payload.file);
+    const uploaded = await guarded(() => apiFetch(`/api/admin/upload/${payload.module}`, { method: 'POST', body: form }));
+    if (uploaded) message = tt('uploadSuccess');
+  }
+
   async function removeRecord(module: ModuleKey, id: string) {
     if (!confirm(tt('deleteConfirm', { module, id }))) return;
     const result = await guarded(() => apiFetch(`/api/admin/${module}/${id}`, { method: 'DELETE' }));
@@ -202,8 +210,17 @@
         </label>
         <button on:click={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button>
         <button on:click={clearEditor}>{tt('reset')}</button>
-        <textarea rows="8" bind:value={draftText} on:change={() => { try { draft = JSON.parse(draftText); } catch {} }}></textarea>
+        <textarea rows="8" bind:value={draftText} on:change={() => {
+          try {
+            draft = JSON.parse(draftText);
+          } catch (parseError) {
+            error = (parseError as Error).message;
+          }
+        }}></textarea>
       </section>
+      {#if activeModule === 'cars' || activeModule === 'customers'}
+        <UploadForm onUpload={uploadImage} t={tt} />
+      {/if}
       {@const view = visibleItems(activeModule)}
       <ModuleTable title={activeModule} items={view.items} total={view.total} page={page} pageSize={pageSize} onDetail={(id) => selectRecord(activeModule, id)} onDelete={(id) => removeRecord(activeModule, id)} t={tt} />
       <section>
