@@ -154,3 +154,31 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Không có blocker trong phạm vi B1.
 - Next Action:
   - Chuyển B2 để chuẩn hóa env strategy (Windows-first) và sample env.
+
+## 2026-05-20 | B2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Chuẩn hóa env vars cho DB/auth/upload/CORS và thêm phân tách môi trường `APP_ENV`.
+  - Thêm cơ chế load `.env` với ưu tiên override từ OS environment.
+  - Bổ sung sample env + tài liệu chiến lược cấu hình Windows-first cho phase 1.
+- Files changed:
+  - internal/config/config.go
+  - .env.example
+  - scripts/run.ps1
+  - docs/migration-b2-config-environment.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+  - `go run ./cmd/server` (boot check) => PASS
+- DoD Mapping:
+  - [x] Chuẩn hóa env vars (DB, auth secret, upload dir, CORS).
+  - [x] Hỗ trợ `.env` + override qua environment.
+  - [x] App boot được với env tối thiểu; có tài liệu sample env.
+- Related Outstanding Checklist Items:
+  - Phase 1 / Cấu hình production-ready (env validation, secret management, tách dev/stg/prod) — tiến triển một phần trong phạm vi B2.
+- Risks/Blockers:
+  - Secret management production (vault/secret store) chưa nằm trong scope B2, cần xử lý ở hardening phase tiếp theo.
+- Next Action:
+  - Chuyển B3 để hoàn thiện middleware core (request-id/recover/logging/CORS).
