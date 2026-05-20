@@ -287,3 +287,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Validation/error envelope toàn cục chưa unify toàn bộ API ngoài phạm vi C2, còn phụ thuộc task hardening phase 1/2.
 - Next Action:
   - Chuyển C3 để khóa search behavior parity dựa trên CRUD queries vừa chuẩn hóa.
+
+## 2026-05-20 | C3 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Chuẩn hóa search parity với legacy: khi `q` rỗng thì trả kết quả rỗng cho tất cả module thay vì trả toàn bộ dữ liệu.
+  - Giữ behavior search đa module (users/cars/customers/transactions) với cùng shape response JSON.
+  - Bổ sung integration test cho empty-query và matched-query để khóa hành vi C3.
+- Files changed:
+  - internal/repo/admin_repo.go
+  - internal/http/admin_crud_test.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http ./internal/repo` => PASS
+- DoD Mapping:
+  - [x] Kết quả search khớp baseline test cases.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Chuẩn hóa search behavior tương đương legacy.
+  - Phase 2 / Integration tests cho auth/CRUD/search/system/upload (đã bổ sung phần search).
+- Risks/Blockers:
+  - Chưa có contract/parity suite Flask-vs-Go tự động cho search (nằm ngoài scope C3, thuộc E2).
+- Next Action:
+  - Chuyển C4 để triển khai dashboard metrics API theo dependency chain.

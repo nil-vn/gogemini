@@ -88,4 +88,52 @@ func TestAdminCRUDFlows(t *testing.T) {
 	}
 }
 
+func TestAdminSearchParity(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
+
+	seed := []string{
+		`INSERT INTO users (username, role, email, password_hash, status) VALUES ('search_user','admin','search@example.com','x','active');`,
+		`INSERT INTO car (name, branch, model, vin, status, car_situation, selling_price) VALUES ('Search Car','Honda','Type R','VIN-SEARCH','available','new',100);`,
+		`INSERT INTO customer (name, phone, address, status) VALUES ('Search Customer','000','HCM','active');`,
+		"INSERT INTO `transaction` (customer_id, status, selling_price, purchase_date, note) VALUES (1,'search-status',200,'2026-01-01','search note');",
+	}
+	for _, s := range seed {
+		if _, err := db.Exec(s); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/search?q=", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("empty search code=%d body=%s", w.Code, w.Body.String())
+	}
+	var emptyResp map[string][]map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &emptyResp); err != nil {
+		t.Fatal(err)
+	}
+	for module, items := range emptyResp {
+		if len(items) != 0 {
+			t.Fatalf("expected empty results for module=%s when q is empty, got=%d", module, len(items))
+		}
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/search?q=search", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("search code=%d body=%s", w.Code, w.Body.String())
+	}
+	var searchResp map[string][]map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &searchResp); err != nil {
+		t.Fatal(err)
+	}
+	for _, module := range []string{"users", "cars", "customers", "transactions"} {
+		if len(searchResp[module]) == 0 {
+			t.Fatalf("expected non-empty search result for module=%s", module)
+		}
+	}
+}
+
 func itoa(v int64) string { return fmt.Sprintf("%d", v) }
