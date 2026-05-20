@@ -51,6 +51,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 
 ## 5) Phase 4 - QA/Performance/Security chưa đạt bằng chứng
 
+- [x] Windows packaging + runbook vận hành host mới (build `server.exe`, `frontend/dist`, script run/migrate/service). _(Done in E4: `docs/phase4-runbook-windows.md`, `scripts/build.ps1`, `scripts/run.ps1`, `scripts/migrate.ps1`, `scripts/windows-service-install.ps1`)_
 - [ ] Nâng Playwright từ smoke lên critical flows đầy đủ.
 - [ ] Chạy test ổn định trong CI, có artifacts khi fail (trace/video/screenshot).
 - [x] Có parity suite đối chiếu legacy vs Go cho từng module. _(Done in E2: `docs/migration-e2-api-parity-checklist.md`, `internal/http/admin_api_parity_test.go`)_
