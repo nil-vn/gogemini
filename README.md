@@ -25,6 +25,7 @@ Tài liệu này hướng dẫn **từng bước** để:
 - Node.js 20+
 - npm
 - Git
+- `migrate_script.sh` / `migrate_script.ps1` sẽ tự thử cài `golang-migrate` bằng `go install` nếu máy chưa có `migrate` CLI.
 
 ### Windows
 - Go
@@ -32,6 +33,7 @@ Tài liệu này hướng dẫn **từng bước** để:
 - npm
 - Git
 - PowerShell 5.1+ hoặc PowerShell 7+
+- `migrate_script.sh` / `migrate_script.ps1` sẽ tự thử cài `golang-migrate` bằng `go install` nếu máy chưa có `migrate` CLI.
 
 > Gợi ý kiểm tra nhanh:
 >
@@ -66,7 +68,6 @@ Backend Go **không tự tạo bảng** khi boot. Kết nối SQLite thành côn
 ### Linux/macOS
 
 ```bash
-# Cài golang-migrate CLI (tham khảo: https://github.com/golang-migrate/migrate)
 export DB_URL="sqlite3://app.db"
 migrate -path migrations -database "$DB_URL" up
 ```

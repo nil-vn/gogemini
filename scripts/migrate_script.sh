@@ -47,10 +47,29 @@ if [[ -z "$USERNAME" || -z "$PASSWORD" ]]; then
   exit 1
 fi
 
-if ! command -v migrate >/dev/null 2>&1; then
-  echo "golang-migrate CLI is required: https://github.com/golang-migrate/migrate"
-  exit 1
-fi
+ensure_migrate() {
+  if command -v migrate >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "migrate CLI not found, trying to install via 'go install'..."
+  if ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to auto-install migrate CLI. Please install Go or install migrate manually."
+    return 1
+  fi
+
+  GO111MODULE=on go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+  local gobin
+  gobin="$(go env GOPATH)/bin"
+  export PATH="$PATH:$gobin"
+
+  if ! command -v migrate >/dev/null 2>&1; then
+    echo "Auto-install migrate failed. Please install manually: https://github.com/golang-migrate/migrate"
+    return 1
+  fi
+}
+
+ensure_migrate
 
 if [[ -z "$EMAIL" ]]; then
   EMAIL="${USERNAME}@local"

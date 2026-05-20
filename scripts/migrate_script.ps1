@@ -13,7 +13,24 @@ param(
 )
 
 if (!(Get-Command migrate -ErrorAction SilentlyContinue)) {
-  Write-Host "golang-migrate CLI is required: https://github.com/golang-migrate/migrate"
+  Write-Host "migrate CLI not found, trying to install via 'go install'..."
+  if (!(Get-Command go -ErrorAction SilentlyContinue)) {
+    Write-Host "Go is required to auto-install migrate CLI. Please install Go or install migrate manually."
+    exit 1
+  }
+
+  go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "Auto-install migrate failed. Please install manually: https://github.com/golang-migrate/migrate"
+    exit 1
+  }
+
+  $goBin = (go env GOPATH).Trim() + "\bin"
+  $env:Path = $env:Path + ";" + $goBin
+}
+
+if (!(Get-Command migrate -ErrorAction SilentlyContinue)) {
+  Write-Host "Auto-install migrate failed. Please install manually: https://github.com/golang-migrate/migrate"
   exit 1
 }
 
