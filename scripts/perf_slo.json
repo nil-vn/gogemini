@@ -1,0 +1,7 @@
+{
+  "p50_ms_max": 100,
+  "p95_ms_max": 250,
+  "throughput_rps_min": 50,
+  "cpu_avg_pct_max": 85,
+  "rss_peak_mb_max": 300
+}

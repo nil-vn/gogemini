@@ -828,3 +828,42 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Integration test UI flow sâu chưa mở rộng toàn module (phạm vi tiếp theo nếu cần).
 - Next Action:
   - Chạy QA regression tích hợp backend staging trước phase gate review.
+
+## 2026-05-20 | WBS-4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Implemented Phase 4.2 CI artifact publishing and failure triage workflow documentation.
+  - Implemented Phase 4.3 security test pack pipeline (dependency scan, SAST, security behavior tests) and report generation.
+  - Implemented Phase 4.4 performance regression gate with explicit SLO thresholds + machine-checked PASS/FAIL report.
+- Files changed:
+  - .github/workflows/phase4-gates.yml
+  - scripts/perf_baseline.py
+  - scripts/perf_gate.py
+  - scripts/perf_slo.json
+  - scripts/security/build_security_report.py
+  - internal/http/security_behavior_test.go
+  - docs/reports/phase4-artifact-triage-workflow.md
+  - docs/reports/phase4-ci-green-evidence.md
+  - docs/reports/security-gate-report.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/... ./cmd/...` => PASS
+  - `go test ./internal/http -run 'Test(CSRF|CORS|Session|Injection|XSS|UploadAbuse)' -v` => PASS
+  - `python scripts/security/build_security_report.py` => PASS
+  - `python scripts/perf_baseline.py --help` => PASS
+  - `python scripts/perf_gate.py --help` => PASS
+- DoD Mapping:
+  - [x] 4.2 Artifact publish workflow for Playwright + triage workflow documented.
+  - [x] 4.3 Security pack automation and security report artifact generation.
+  - [x] 4.4 Performance regression gate with p50/p95/throughput/cpu/memory SLO and gating script.
+  - [ ] CI green evidence >= N consecutive runs (requires post-merge GitHub Actions executions).
+- Related Outstanding Checklist Items:
+  - Phase 4 / CI stable + artifacts on failure.
+  - Phase 4 / Security checklist execution.
+  - Phase 4 / Performance regression gate evidence.
+- Risks/Blockers:
+  - CI green streak evidence cannot be produced fully from local container; needs GitHub Actions run history after merge.
+- Next Action:
+  - Merge and execute workflow until 3 consecutive green runs; then update `docs/reports/phase4-ci-green-evidence.md` with run IDs/URLs.
