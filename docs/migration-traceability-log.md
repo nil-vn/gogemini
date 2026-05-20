@@ -261,3 +261,29 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Repo query hiện tại mới scan subset fields; cần C2/C4 cập nhật query mapping để tận dụng đầy đủ domain fields.
 - Next Action:
   - Chuyển C2 để triển khai repository CRUD đầy đủ trên các entity vừa chuẩn hóa.
+
+## 2026-05-20 | C2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện repository CRUD cho users/cars/customers/transactions: list + detail + create + update + delete.
+  - Chuẩn hóa list query behavior với pagination/sort/order/search và response envelope thống nhất cho 4 module.
+  - Bổ sung integration tests theo HTTP flow để chứng minh CRUD end-to-end cho từng module.
+- Files changed:
+  - internal/repo/admin_repo.go
+  - internal/http/admin.go
+  - internal/http/admin_crud_test.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http ./internal/repo` => PASS
+- DoD Mapping:
+  - [x] Integration test pass cho CRUD mỗi module.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Hoàn thiện đầy đủ create/read/update/delete cho users/cars/customers/transactions.
+  - Phase 2 / Chuẩn hóa filter/sort/pagination cho toàn bộ list APIs.
+  - Phase 2 / Chuẩn response list (`items`, `total`, `page`, `page_size`, `sort`, `order`).
+- Risks/Blockers:
+  - Validation/error envelope toàn cục chưa unify toàn bộ API ngoài phạm vi C2, còn phụ thuộc task hardening phase 1/2.
+- Next Action:
+  - Chuyển C3 để khóa search behavior parity dựa trên CRUD queries vừa chuẩn hóa.
