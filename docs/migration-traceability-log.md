@@ -82,3 +82,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Baseline hiện tại là server-rendered HTML flow, nên khi chuyển REST cần task phase 2 map lại response contract JSON mà không lệch nghiệp vụ.
 - Next Action:
   - Tiếp tục A3 để freeze schema + ERD + data mapping rules.
+
+## 2026-05-20 | A3 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (see commit history)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Freeze schema revision head và chuỗi migration làm baseline cho migration Go.
+  - Tạo schema snapshot dạng SQL + ERD mermaid + data mapping rules từ legacy sang Go domain.
+  - Đánh dấu checklist outstanding của A3 đã hoàn tất.
+- Files changed:
+  - docs/migration-a3-schema-freeze.md
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `rg -n "revision =|down_revision =" migrations/versions/*.py` => PASS
+  - `rg -n "A3|schema|ERD|data mapping|migration-a3-schema-freeze" docs/*.md` => PASS
+- DoD Mapping:
+  - [x] Có file snapshot schema + ERD đính kèm docs.
+- Related Outstanding Checklist Items:
+  - Phase 0 / ERD + schema snapshot + data mapping rules từ legacy sang hệ mới.
+- Risks/Blockers:
+  - Kiểu dữ liệu ngày giờ hiện dùng string ở legacy, có rủi ro parse/validate ở Phase 2 nếu không chuẩn hóa format input.
+- Next Action:
+  - Chuyển sang A4 để tạo legacy smoke baseline report đối chiếu parity.
