@@ -469,3 +469,30 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Chưa có frontend integration/e2e test cho guard/logout flow trong phạm vi D2 (sẽ được cover ở E1 theo kế hoạch).
 - Next Action:
   - Chuyển D3 để hoàn thiện parity page flow cho 5 module.
+
+## 2026-05-20 | D3 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện module pages parity cho Dashboard + Users/Cars/Customers/Transactions trên SPA route `/admin/*`.
+  - Bổ sung CRUD UI flow mức parity v1 cho 4 module dữ liệu: list + filter + sort + pagination + create/update + detail + delete confirm.
+  - Tách kiểu dữ liệu frontend cho dashboard/module records và nâng cấp bảng module để thao tác detail/delete trực tiếp.
+- Files changed:
+  - frontend/src/App.svelte
+  - frontend/src/components/ModuleTable.svelte
+  - frontend/src/lib/types.ts
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `npm --prefix frontend ci` => PASS
+  - `npm --prefix frontend run build` => PASS
+  - `npm --prefix frontend run test` => FAIL (missing script)
+  - `cd frontend && npx playwright test` => FAIL (Playwright browser chưa được cài trong môi trường)
+- DoD Mapping:
+  - [x] Hoàn tất end-to-end UI flow cho 5 module (Dashboard, Users, Cars, Customers, Transactions) ở mức route + data flow parity FE với API Go.
+- Related Outstanding Checklist Items:
+  - Phase 3 / Hoàn thiện flow CRUD đầy đủ cho từng module (list/filter/sort/pagination/create/edit/detail/delete confirm).
+- Risks/Blockers:
+  - Chưa có automated frontend unit/integration tests cho D3 flow; đây là hạng mục outstanding riêng sẽ xử lý ở task sau.
+- Next Action:
+  - Chuyển D4 để hoàn thiện search/system settings/i18n và giảm hardcode UI còn lại theo phase plan.

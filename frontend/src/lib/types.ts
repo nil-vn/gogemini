@@ -5,3 +5,7 @@ export type Settings = {
   theme: 'dark' | 'light';
   language: 'vi' | 'en';
 };
+
+export type ModuleRecord = Record<string, unknown> & { id?: string | number };
+
+export type DashboardMetrics = Record<string, number | string | unknown>;
