@@ -555,3 +555,32 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Chưa có frontend integration/e2e test tự động cho upload flow ở D5; sẽ được cover đầy đủ trong E1.
 - Next Action:
   - Chuyển E1 để tự động hóa critical flow gồm upload bằng Playwright.
+
+## 2026-05-20 | E1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Nâng Playwright E2E từ smoke cơ bản lên critical flow đơn: login → users CRUD → global search → cars upload → logout.
+  - Dùng network route mocking cho backend API để kiểm soát data state cho luồng critical và giảm flaky.
+  - Giữ scope đúng E1, không mở rộng sang parity suite/perf/cutover tasks.
+- Files changed:
+  - frontend/tests/smoke.spec.ts
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run test:e2e` => FAIL (missing Playwright binary trước khi cài deps)
+  - `cd frontend && npm install` => PASS
+  - `cd frontend && npx playwright install chromium` => FAIL (403 Domain forbidden khi tải browser)
+- DoD Mapping:
+  - [x] Có kịch bản login.
+  - [x] Có kịch bản CRUD (users create/detail/update/delete).
+  - [x] Có kịch bản search.
+  - [x] Có kịch bản upload.
+  - [ ] Test critical pass trên CI/local (chưa chứng minh do blocker tải Playwright browser trong môi trường hiện tại).
+- Related Outstanding Checklist Items:
+  - Phase 4 / Nâng Playwright từ smoke lên critical flows đầy đủ.
+  - Phase 4 / Chạy test ổn định trong CI, có artifacts khi fail (đã có `trace: on-first-retry` từ config, chưa chạy được do blocker browser).
+- Risks/Blockers:
+  - Blocker hạ tầng: CDN Playwright trả `403 Domain forbidden` khi `npx playwright install chromium`, nên chưa thể thực thi E2E để chứng minh pass local.
+- Next Action:
+  - Chạy lại `npx playwright install --with-deps chromium` trong runner có quyền truy cập `cdn.playwright.dev` hoặc dùng base image đã preinstall browser, sau đó execute `npm run test:e2e` để đóng DoD cuối.
