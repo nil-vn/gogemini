@@ -10,16 +10,21 @@ import (
 )
 
 type Config struct {
-	ServerAddr  string
-	DBDriver    string
-	DBDSN       string
-	DBMaxOpen   int
-	DBMaxIdle   int
-	DBMaxLifeMs int
-	CORSOrigin  string
-	AuthSecret  string
-	UploadDir   string
-	Environment string
+	ServerAddr           string
+	DBDriver             string
+	DBDSN                string
+	DBMaxOpen            int
+	DBMaxIdle            int
+	DBMaxLifeMs          int
+	CORSOrigin           string
+	AuthSecret           string
+	UploadDir            string
+	Environment          string
+	DefaultAdminUsername string
+	DefaultAdminPassword string
+	DefaultAdminEmail    string
+	DefaultAdminRole     string
+	DefaultAdminStatus   string
 }
 
 func MustLoad() Config {
@@ -28,16 +33,21 @@ func MustLoad() Config {
 	}
 
 	cfg := Config{
-		ServerAddr:  getEnv("SERVER_ADDR", ":8080"),
-		DBDriver:    getEnv("DB_DRIVER", "sqlite"),
-		DBDSN:       getEnv("DB_DSN", "file:app.db?cache=shared"),
-		DBMaxOpen:   getEnvInt("DB_MAX_OPEN_CONNS", 10),
-		DBMaxIdle:   getEnvInt("DB_MAX_IDLE_CONNS", 5),
-		DBMaxLifeMs: getEnvInt("DB_CONN_MAX_LIFETIME_MS", 300000),
-		CORSOrigin:  getEnv("CORS_ORIGIN", "*"),
-		AuthSecret:  getEnv("AUTH_SECRET", "dev-change-me"),
-		UploadDir:   getEnv("UPLOAD_DIR", filepath.FromSlash("static/uploads")),
-		Environment: strings.ToLower(getEnv("APP_ENV", "development")),
+		ServerAddr:           getEnv("SERVER_ADDR", ":8080"),
+		DBDriver:             getEnv("DB_DRIVER", "sqlite"),
+		DBDSN:                getEnv("DB_DSN", "file:app.db?cache=shared"),
+		DBMaxOpen:            getEnvInt("DB_MAX_OPEN_CONNS", 10),
+		DBMaxIdle:            getEnvInt("DB_MAX_IDLE_CONNS", 5),
+		DBMaxLifeMs:          getEnvInt("DB_CONN_MAX_LIFETIME_MS", 300000),
+		CORSOrigin:           getEnv("CORS_ORIGIN", "*"),
+		AuthSecret:           getEnv("AUTH_SECRET", "dev-change-me"),
+		UploadDir:            getEnv("UPLOAD_DIR", filepath.FromSlash("static/uploads")),
+		Environment:          strings.ToLower(getEnv("APP_ENV", "development")),
+		DefaultAdminUsername: getEnv("DEFAULT_ADMIN_USERNAME", ""),
+		DefaultAdminPassword: getEnv("DEFAULT_ADMIN_PASSWORD", ""),
+		DefaultAdminEmail:    getEnv("DEFAULT_ADMIN_EMAIL", ""),
+		DefaultAdminRole:     getEnv("DEFAULT_ADMIN_ROLE", "admin"),
+		DefaultAdminStatus:   getEnv("DEFAULT_ADMIN_STATUS", "active"),
 	}
 
 	mustNotBlank("DB_DRIVER", cfg.DBDriver)
