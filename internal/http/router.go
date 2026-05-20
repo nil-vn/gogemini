@@ -14,8 +14,9 @@ import (
 
 func NewRouter(cfg config.Config, db *sql.DB) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Recovery())
 	r.Use(middleware.RequestID())
+	r.Use(middleware.RecoverPanic())
+	r.Use(middleware.RequestLogger())
 	r.Use(middleware.CORS(cfg.CORSOrigin))
 
 	registerAdminRoutes(r, db)

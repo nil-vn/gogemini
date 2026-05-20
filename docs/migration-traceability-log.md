@@ -182,3 +182,29 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Secret management production (vault/secret store) chưa nằm trong scope B2, cần xử lý ở hardening phase tiếp theo.
 - Next Action:
   - Chuyển B3 để hoàn thiện middleware core (request-id/recover/logging/CORS).
+
+## 2026-05-20 | B3 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện middleware core cho Go backend gồm request-id, panic recovery và request logging.
+  - Giữ CORS middleware trong pipeline để xử lý preflight và response headers theo cấu hình.
+  - Thêm test middleware để chứng minh request luôn có request-id và panic không làm crash process.
+- Files changed:
+  - internal/http/router.go
+  - internal/http/middleware/logger.go
+  - internal/http/middleware/recovery.go
+  - internal/http/middleware/middleware_test.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+- DoD Mapping:
+  - [x] Mọi request có request-id.
+  - [x] Panic được xử lý không crash process.
+- Related Outstanding Checklist Items:
+  - Phase 1 / Structured logging + request correlation + redaction dữ liệu nhạy cảm (đã xử lý phần logging + request correlation trong phạm vi B3).
+- Risks/Blockers:
+  - Redaction dữ liệu nhạy cảm chưa được triển khai trong logger hiện tại (ngoài scope DoD B3, cần hardening tiếp).
+- Next Action:
+  - Chuyển B4 để tách readiness/liveness và hoàn thiện healthcheck + DB connect hardening.
