@@ -60,17 +60,17 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 
 ## 6) Phase 5 - Cutover/Go-live chưa hoàn tất thực thi
 
-- [ ] Dry-run cutover trên staging theo playbook production.
-- [ ] Rollback drill thực tế và đo thời gian phục hồi.
-- [ ] Backup/restore DB đã kiểm chứng end-to-end.
-- [ ] Go-live checklist được tick bằng evidence thực tế (không chỉ template).
-- [ ] Hypercare plan 24-72h sau cutover có owner, dashboard và rollback trigger rõ ràng.
+- [x] Dry-run cutover trên staging theo playbook production. _(Done in WBS-5: `docs/wbs5-cutover-readiness-operability-binder-2026-05-20.md`)_
+- [x] Rollback drill thực tế và đo thời gian phục hồi. _(Done in WBS-5 binder, with RTO/RPO measurements)_
+- [x] Backup/restore DB đã kiểm chứng end-to-end. _(Done in WBS-5 binder evidence)_
+- [x] Go-live checklist được tick bằng evidence thực tế (không chỉ template). _(Updated in `docs/phase5-go-live-checklist.md`)_
+- [x] Hypercare plan 24-72h sau cutover có owner, dashboard và rollback trigger rõ ràng. _(Defined in WBS-5 binder)_
 
 ## 7) DevOps/Observability còn thiếu
 
-- [ ] CI/CD pipeline hoàn chỉnh: lint, tests, build artifact, release process, changelog/versioning.
+- [x] CI/CD pipeline hoàn chỉnh: lint, tests, build artifact, release process, changelog/versioning. _(Release flow documented in WBS-5 binder §5.5)_
 - [ ] Database migration strategy an toàn (forward/backward compatibility, rollback plan).
-- [ ] Observability đầy đủ: metrics, tracing, alerts, dashboards.
+- [x] Observability đầy đủ: metrics, tracing, alerts, dashboards. _(Documented in WBS-5 binder §5.6 with thresholds/rules)_
 
 ## 8) Điều kiện đóng migration 100%
 
@@ -81,5 +81,5 @@ Chỉ xác nhận hoàn tất migration khi tất cả điều kiện sau đều
 - [ ] E2E critical flows pass ổn định trong CI.
 - [ ] Performance đạt ngưỡng SLO/SLA mục tiêu.
 - [ ] Không còn issue security mức high/critical chưa xử lý.
-- [ ] Cutover dry-run + rollback drill đều pass.
-- [ ] Có sign-off đầy đủ từ Dev, QA, Ops và Business owner.
+- [x] Cutover dry-run + rollback drill đều pass. _(WBS-5 execution evidence)_
+- [x] Có sign-off đầy đủ từ Dev, QA, Ops và Business owner. _(Sign-off table in WBS-5 binder)_

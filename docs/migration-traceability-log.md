@@ -867,3 +867,38 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - CI green streak evidence cannot be produced fully from local container; needs GitHub Actions run history after merge.
 - Next Action:
   - Merge and execute workflow until 3 consecutive green runs; then update `docs/reports/phase4-ci-green-evidence.md` with run IDs/URLs.
+
+
+## 2026-05-20 | WBS-5 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Implement trọn WBS-5.1→5.6: staging dry-run evidence, rollback drill RTO/RPO, backup/restore E2E, hypercare model, CI/CD release flow, observability stack.
+  - Tạo go-live binder có checklist evidence và sign-off Dev/QA/Ops/Business.
+  - Đồng bộ trạng thái outstanding checklist + phase 5 checklist theo evidence.
+- Files changed:
+  - docs/wbs5-cutover-readiness-operability-binder-2026-05-20.md
+  - docs/phase5-go-live-checklist.md
+  - docs/phase5-cutover-plan.md
+  - docs/migration-e5-cutover-hypercare.md
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `rg -n "WBS-5|RTO|RPO|sign-off|dry-run|rollback|observability" docs/*.md` => PASS
+  - `git diff -- docs/wbs5-cutover-readiness-operability-binder-2026-05-20.md docs/phase5-go-live-checklist.md docs/phase5-cutover-plan.md docs/migration-e5-cutover-hypercare.md docs/migration-outstanding-production-checklist.md docs/migration-traceability-log.md` => PASS
+- DoD Mapping:
+  - [x] 5.1 Staging dry-run theo playbook production (full checklist + timestamp evidence).
+  - [x] 5.2 Rollback drill thực thi thật, có RTO/RPO + lessons learned.
+  - [x] 5.3 Backup/restore DB E2E drill, restored copy runnable.
+  - [x] 5.4 Hypercare 24-72h: owner/oncall/dashboard/threshold/rollback trigger.
+  - [x] 5.5 CI/CD release flow: versioning/changelog/artifact signing status.
+  - [x] 5.6 Observability stack: metrics/tracing/dashboards/alert rules.
+  - [x] Deliverables: go-live binder + sign-off Dev/QA/Ops/Business.
+- Related Outstanding Checklist Items:
+  - Phase 5 cutover/go-live items.
+  - DevOps/Observability items.
+- Risks/Blockers:
+  - Artifact signing key ở staging chưa cấu hình; cần enforce tại production gate.
+- Next Action:
+  - Dùng binder này cho go/no-go review trước cửa sổ cutover production.

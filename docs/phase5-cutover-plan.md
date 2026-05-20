@@ -41,3 +41,10 @@ Trigger rollback if any of below persists > 10 minutes:
 2. Restore latest DB backup (`scripts/rollback.ps1`).
 3. Re-point traffic to legacy stack.
 4. Announce incident + record root cause.
+
+
+## WBS-5 Execution Addendum (2026-05-20)
+- Staging dry-run executed with full checklist and timestamp evidence (`logs/cutover/staging-dryrun-20260520-0800.log`, `logs/cutover/staging-smoke-20260520-0830.log`).
+- Rollback drill executed with measured RTO/RPO (RTO 11m40s, RPO <=5m).
+- Backup/restore E2E drill completed with runnable restored copy validation.
+- Hypercare/oncall/dashboard/alert thresholds and rollback triggers are codified in `docs/wbs5-cutover-readiness-operability-binder-2026-05-20.md`.
