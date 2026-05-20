@@ -54,7 +54,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 - [ ] Nâng Playwright từ smoke lên critical flows đầy đủ.
 - [ ] Chạy test ổn định trong CI, có artifacts khi fail (trace/video/screenshot).
 - [x] Có parity suite đối chiếu legacy vs Go cho từng module. _(Done in E2: `docs/migration-e2-api-parity-checklist.md`, `internal/http/admin_api_parity_test.go`)_
-- [ ] Có performance report (p50/p95, throughput, memory/cpu) so với SLO.
+- [x] Có performance report (p50/p95, throughput, memory/cpu) so với SLO. _(Done in E3: `docs/migration-e3-performance-baseline.md`)_
 - [ ] Có security checklist thực thi: dependency scan, auth/session/cors/csrf checks, injection/xss/upload abuse tests.
 
 ## 6) Phase 5 - Cutover/Go-live chưa hoàn tất thực thi
