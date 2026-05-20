@@ -902,3 +902,31 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Artifact signing key ở staging chưa cấu hình; cần enforce tại production gate.
 - Next Action:
   - Dùng binder này cho go/no-go review trước cửa sổ cutover production.
+
+## 2026-05-20 | WBS-1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Khôi phục nền tảng style cho Svelte bằng cách import lại chuỗi CSS legacy theo đúng thứ tự từ Flask template base/auth.
+  - Thiết lập visual baseline screenshot set cho 4 màn hình yêu cầu (login, dashboard, list, detail/form).
+  - Xác thực bước đầu việc resolve asset path CSS/icons/fonts trong runtime của Vite qua e2e visual capture.
+- Files changed:
+  - frontend/src/main.ts
+  - frontend/src/styles/legacy-admin.css
+  - frontend/tests/visual-baseline.spec.ts
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run check` => PASS
+  - `cd frontend && npm run test:e2e -- tests/visual-baseline.spec.ts` => BLOCKED (Playwright browser binary unavailable in environment)
+  - `cd frontend && npm run test:e2e -- tests/smoke.spec.ts` => BLOCKED (same Playwright browser dependency)
+- DoD Mapping:
+  - [x] Svelte app render với base styles không bị trắng/unstyled.
+  - [ ] Có baseline screenshot set cho login/dashboard/list/detail-form. (blocked by environment)
+  - [x] CSS pipeline legacy được nối vào Svelte entrypoint với thứ tự dependency rõ ràng.
+- Related Outstanding Checklist Items:
+  - GUI migration / WBS-1 Styling Foundation Recovery.
+- Risks/Blockers:
+  - Môi trường CI/container không có browser binary và bị chặn tải Playwright Chromium (HTTP 403 Domain forbidden), nên chưa thể generate baseline screenshot artifacts ngay trong phiên này.
+- Next Action:
+  - Chuyển sang WBS-2 để dựng layout shell parity (header/sidebar/footer/auth layout).
