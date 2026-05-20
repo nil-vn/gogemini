@@ -4,6 +4,7 @@
   import { apiFetch } from './lib/api';
   import type { DashboardMetrics, ModuleKey, ModuleRecord, Settings } from './lib/types';
   import { setLocale, t as tStore, type Locale } from './lib/i18n';
+  import { validateRecord, validateSettings } from './lib/validation';
   import LoginForm from './components/LoginForm.svelte';
   import ModuleTable from './components/ModuleTable.svelte';
   import SettingsForm from './components/SettingsForm.svelte';
@@ -34,6 +35,8 @@
   const pageSize = 10;
   let error = '';
   let message = '';
+  let isLoading = false;
+  let lastAction: (() => Promise<unknown>) | null = null;
   let isAuthenticated = false;
   $: activeModule = route.kind === 'admin' ? route.module : 'users';
 
@@ -56,7 +59,22 @@
   function clearEditor() { draft = {}; selectedId = ''; syncDraftText(); }
 
   async function guarded<T>(fn: () => Promise<T>) {
-    try { error = ''; return await fn(); } catch (e) { error = (e as Error).message; return null; }
+    try {
+      isLoading = true;
+      error = '';
+      lastAction = fn;
+      return await fn();
+    } catch (e) {
+      error = (e as Error).message;
+      return null;
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  async function retryLastAction() {
+    if (!lastAction) return;
+    await guarded(lastAction);
   }
 
   async function checkAuth() {
@@ -100,6 +118,8 @@
   }
 
   async function saveSettings(payload: Settings) {
+    const settingsErrors = validateSettings(payload);
+    if (settingsErrors.length) { error = tt(settingsErrors[0]); return; }
     const res = await guarded(() => apiFetch('/api/admin/system', { method: 'PUT', body: JSON.stringify(payload) })) as Settings | null;
     if (!res) return;
     settings = res;
@@ -113,6 +133,8 @@
   }
 
   async function saveRecord(module: ModuleKey) {
+    const validationErrors = validateRecord(module, draft);
+    if (validationErrors.length) { error = tt(validationErrors[0]); return; }
     const id = selectedId || (draft as any)?.id;
     const method = id ? 'PUT' : 'POST';
     const path = id ? `/api/admin/${module}/${id}` : `/api/admin/${module}`;
@@ -176,12 +198,13 @@
   });
 </script>
 
-<main>
+<a href="#main-content" class="skip-link">{tt('a11ySkipToContent')}</a>
+<main id="main-content" tabindex="-1">
   <h1>{tt('appTitle')}</h1>
   {#if route.kind === 'login'}
-    <LoginForm onSubmit={login} />
+    <LoginForm onSubmit={login} t={tt} />
   {:else if route.kind === 'dashboard' || route.kind === 'admin' || route.kind === 'settings'}
-    <nav>
+    <nav aria-label={tt('a11yNavLabel')}>
       <button on:click={() => go('/admin/dashboard')} disabled={route.kind === 'dashboard'}>{tt('navDashboard')}</button>
       {#each modules as m}<button on:click={() => go(`/admin/${m}`)} disabled={route.kind === 'admin' && route.module === m}>{m}</button>{/each}
       <button on:click={() => go('/admin/system')} disabled={route.kind === 'settings'}>{tt('navSettings')}</button>
@@ -189,7 +212,7 @@
     </nav>
 
     <section>
-      <label>{tt('searchLabel')} <input bind:value={globalSearchTerm} placeholder={tt('searchPlaceholder')} /></label>
+      <label for="global-search">{tt('searchLabel')}</label> <input id="global-search" bind:value={globalSearchTerm} placeholder={tt('searchPlaceholder')} />
       <button on:click={runGlobalSearch}>{tt('searchLabel')}</button>
       {#if globalSearchTerm.trim().length > 0}
         <h4>{tt('searchResults')}</h4>
@@ -232,6 +255,14 @@
   {:else}
     <p><a href="#/auth/login">{tt('login')}</a> | <a href="#/admin/dashboard">{tt('admin')}</a></p>
   {/if}
-  {#if message}<p style="color:green">{message}</p>{/if}
-  {#if error}<p style="color:red">{error}</p>{/if}
+  <section aria-live="polite" aria-label={tt('a11yStatusLabel')}>
+    {#if isLoading}<p>{tt('loading')}</p>{/if}
+    {#if message}<p style="color:green">{message}</p>{/if}
+    {#if error}<p style="color:red">{tt('errorTitle')}: {error} <button on:click={retryLastAction}>{tt('retry')}</button></p>{/if}
+  </section>
 </main>
+
+<style>
+  .skip-link { position:absolute; left:-9999px; }
+  .skip-link:focus { left: 8px; top:8px; background:#111; color:#fff; padding:8px; z-index:1000; }
+</style>

@@ -47,7 +47,23 @@ const dictionaries: Record<Locale, Dict> = {
     upload: 'Upload',
     uploadSuccess: 'Image uploaded successfully',
     dark: 'dark',
-    light: 'light'
+    light: 'light',
+
+    loading: 'Loading...',
+    emptyState: 'No data available',
+    retry: 'Retry',
+    errorTitle: 'Something went wrong',
+    validationCurrency: 'Currency must be a 3-letter uppercase code',
+    validationTheme: 'Theme must be light or dark',
+    validationLanguage: 'Language must be en or vi',
+    validationNameRequired: 'Name is required',
+    validationTransactionIdRequired: 'Transaction id is required',
+    validationFileRequired: 'Please choose a file',
+    validationFileType: 'Only image files are allowed',
+    validationFileSize: 'Image must be <= 5MB',
+    a11ySkipToContent: 'Skip to main content',
+    a11yNavLabel: 'Primary navigation',
+    a11yStatusLabel: 'Status messages',
   },
   vi: {
     appTitle: 'GoGemini Admin',
@@ -91,7 +107,23 @@ const dictionaries: Record<Locale, Dict> = {
     upload: 'Tải lên',
     uploadSuccess: 'Tải ảnh thành công',
     dark: 'tối',
-    light: 'sáng'
+    light: 'sáng',
+
+    loading: 'Đang tải...',
+    emptyState: 'Không có dữ liệu',
+    retry: 'Thử lại',
+    errorTitle: 'Đã có lỗi xảy ra',
+    validationCurrency: 'Tiền tệ phải là mã 3 ký tự in hoa',
+    validationTheme: 'Giao diện phải là light hoặc dark',
+    validationLanguage: 'Ngôn ngữ phải là en hoặc vi',
+    validationNameRequired: 'Tên là bắt buộc',
+    validationTransactionIdRequired: 'Mã giao dịch là bắt buộc',
+    validationFileRequired: 'Vui lòng chọn tệp',
+    validationFileType: 'Chỉ cho phép tệp hình ảnh',
+    validationFileSize: 'Ảnh phải <= 5MB',
+    a11ySkipToContent: 'Bỏ qua đến nội dung chính',
+    a11yNavLabel: 'Điều hướng chính',
+    a11yStatusLabel: 'Thông báo trạng thái',
   }
 };
 
