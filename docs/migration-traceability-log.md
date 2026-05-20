@@ -443,3 +443,29 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Không có blocker trong phạm vi D1.
 - Next Action:
   - Chuyển D2 để dựng app shell + routing + auth guard trên nền scaffold/toolchain đã ổn định.
+
+## 2026-05-20 | D2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện app shell routing theo nhóm `/auth/*` và `/admin/*` với module route con `/admin/:module`.
+  - Bổ sung auth guard ở tầng SPA: route `/admin/*` bắt buộc session hợp lệ, nếu 401 thì redirect về `/auth/login`.
+  - Bổ sung logout action ở app shell để gọi API logout và redirect đúng về màn login.
+- Files changed:
+  - frontend/src/App.svelte
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `npm --prefix frontend ci` => PASS
+  - `npm --prefix frontend run build` => PASS
+  - `npm --prefix frontend run check` => PASS
+- DoD Mapping:
+  - [x] Layout admin + route grouping.
+  - [x] Route admin yêu cầu auth (guard + intercept 401).
+  - [x] Logout redirect đúng về `/auth/login`.
+- Related Outstanding Checklist Items:
+  - Phase 3 / Hoàn thiện flow CRUD đầy đủ cho từng module (D2 cung cấp app shell + auth guard làm nền routing cho các flow D3+).
+- Risks/Blockers:
+  - Chưa có frontend integration/e2e test cho guard/logout flow trong phạm vi D2 (sẽ được cover ở E1 theo kế hoạch).
+- Next Action:
+  - Chuyển D3 để hoàn thiện parity page flow cho 5 module.
