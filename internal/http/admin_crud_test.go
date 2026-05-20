@@ -5,8 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -236,5 +240,49 @@ func TestAdminSystemSettingsValidationAndAuthorization(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected unauthorized without session, got code=%d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminUploadAPI(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	uploadRoot := t.TempDir()
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test", UploadDir: uploadRoot}, db)
+
+	makeUploadReq := func(filename string, content []byte) *http.Request {
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("file", filename)
+		_, _ = part.Write(content)
+		_ = writer.Close()
+		req := httptest.NewRequest(http.MethodPost, "/api/admin/upload/cars", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		req.AddCookie(&http.Cookie{Name: "session", Value: service.BuildSessionToken(1, "test-secret")})
+		return req
+	}
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, makeUploadReq("../../evil.png", []byte{137, 80, 78, 71, 13, 10, 26, 10, 0}))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("expected upload success, got=%d body=%s", w.Code, w.Body.String())
+	}
+	var resp map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(resp["path"], "uploads/cars/") {
+		t.Fatalf("expected normalized uploads path, got=%s", resp["path"])
+	}
+	if strings.Contains(resp["path"], "..") {
+		t.Fatalf("path traversal detected in response path=%s", resp["path"])
+	}
+	if _, err := os.Stat(filepath.Join(uploadRoot, strings.TrimPrefix(resp["path"], "uploads/"))); err != nil {
+		t.Fatalf("uploaded file was not saved: %v", err)
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, makeUploadReq("bad.gif", []byte("GIF89a")))
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected unsupported extension to fail, got=%d body=%s", w.Code, w.Body.String())
 	}
 }

@@ -34,7 +34,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 - [ ] Chuẩn hóa search behavior tương đương legacy.
 - [ ] Dashboard metrics đúng định nghĩa nghiệp vụ (không chỉ count thô nếu chưa đủ).
 - [ ] System settings có validation key/value + authorization đầy đủ.
-- [ ] Upload hardening: MIME/ext whitelist, size limits, filename sanitization, chống path traversal, storage strategy production.
+- [x] Upload hardening: MIME/ext whitelist, size limits, filename sanitization, chống path traversal, storage strategy production. _(Done in C7: `internal/http/admin.go`, `internal/http/admin_crud_test.go`)_
 
 ### Test coverage cho API
 - [ ] Unit tests cho service/repo logic quan trọng.

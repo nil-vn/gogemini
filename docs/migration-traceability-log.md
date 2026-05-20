@@ -390,3 +390,29 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Tập giá trị allowed cho `currency/theme/language` đang hardcode theo phạm vi parity; nếu business mở rộng danh mục cần cập nhật contract + test tương ứng.
 - Next Action:
   - Chuyển C7 để xử lý upload hardening theo dependency chain.
+
+
+## 2026-05-20 | C7 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện Upload API `/api/admin/upload/:module` cho cars/customers với validate cứng theo whitelist MIME+extension, giới hạn dung lượng 5MB, và chặn file rỗng.
+  - Chuẩn hóa/sanitize tên file upload để chống path traversal và ký tự không an toàn; trả về path tương đối chuẩn `uploads/<module>/<uuid>_<filename>`.
+  - Chuyển storage root sang config `UPLOAD_DIR` (Windows-compatible) và thêm integration test upload success + hardening reject case.
+- Files changed:
+  - internal/http/admin.go
+  - internal/http/admin_crud_test.go
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http ./internal/config ./...` => PASS
+- DoD Mapping:
+  - [x] Upload thành công và trả URL/path đúng trên Windows.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Search, dashboard, system, upload / Upload hardening: MIME/ext whitelist, size limits, filename sanitization, chống path traversal, storage strategy production.
+  - Phase 2 / Test coverage cho API / Integration tests cho auth/CRUD/search/system/upload (đã bổ sung phần upload).
+- Risks/Blockers:
+  - Storage strategy hiện tại là local filesystem (parity v1); production object storage lifecycle/CDN chưa nằm trong scope C7.
+- Next Action:
+  - Chuyển E2 để khóa parity contract test Flask vs Go cho upload + module API trọng yếu.

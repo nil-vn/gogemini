@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -304,26 +306,13 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 			return
 		}
 		defer file.Close()
-		if header.Size > 5*1024*1024 {
-			c.JSON(400, gin.H{"error": "file too large (max 5MB)"})
+		if err := validateUploadFile(file, header); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		buf := make([]byte, 512)
-		n, _ := file.Read(buf)
-		if ct := http.DetectContentType(buf[:n]); !strings.HasPrefix(ct, "image/") {
-			c.JSON(400, gin.H{"error": "only image files are allowed"})
-			return
-		}
-		if _, err := file.Seek(0, io.SeekStart); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-		rel := filepath.Join("uploads", module, fmt.Sprintf("%s_%s", uuid.NewString(), filepath.Base(header.Filename)))
-		root := os.Getenv("UPLOAD_ROOT")
-		if root == "" {
-			root = "static"
-		}
-		abs := filepath.Join(root, rel)
+		fileName := sanitizeUploadFilename(header.Filename)
+		rel := filepath.Join(module, fmt.Sprintf("%s_%s", uuid.NewString(), fileName))
+		abs := filepath.Join(cfg.UploadDir, rel)
 		if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
@@ -338,8 +327,47 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(201, gin.H{"path": filepath.ToSlash(rel), "uploaded_at": time.Now().UTC().Format(time.RFC3339)})
+		c.JSON(201, gin.H{"path": filepath.ToSlash(filepath.Join("uploads", rel)), "uploaded_at": time.Now().UTC().Format(time.RFC3339)})
 	})
+}
+
+var uploadNameSanitizer = regexp.MustCompile(`[^a-zA-Z0-9._-]+`)
+
+func sanitizeUploadFilename(name string) string {
+	base := filepath.Base(strings.TrimSpace(name))
+	if base == "." || base == string(filepath.Separator) || base == "" {
+		base = "upload"
+	}
+	base = strings.ReplaceAll(base, "..", "")
+	base = uploadNameSanitizer.ReplaceAllString(base, "_")
+	base = strings.Trim(base, "._-")
+	if base == "" {
+		return "upload"
+	}
+	return base
+}
+
+func validateUploadFile(file multipart.File, header *multipart.FileHeader) error {
+	if header.Size <= 0 {
+		return errors.New("file is empty")
+	}
+	if header.Size > 5*1024*1024 {
+		return errors.New("file too large (max 5MB)")
+	}
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	allowedExt := map[string]struct{}{".jpg": {}, ".jpeg": {}, ".png": {}, ".webp": {}}
+	if _, ok := allowedExt[ext]; !ok {
+		return errors.New("unsupported file extension")
+	}
+	buf := make([]byte, 512)
+	n, _ := file.Read(buf)
+	allowedMIME := map[string]struct{}{"image/jpeg": {}, "image/png": {}, "image/webp": {}}
+	ct := strings.ToLower(http.DetectContentType(buf[:n]))
+	if _, ok := allowedMIME[ct]; !ok {
+		return errors.New("only jpeg/png/webp images are allowed")
+	}
+	_, err := file.Seek(0, io.SeekStart)
+	return err
 }
 
 func deleteByID(c *gin.Context, repository repo.AdminRepo, table string) {
