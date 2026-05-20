@@ -1,13 +1,16 @@
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8080';
 
 export async function apiFetch(path: string, init: RequestInit = {}) {
+  const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
+  const headers = {
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(init.headers ?? {})
+  };
+
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init.headers ?? {})
-    }
+    headers
   });
 
   if (response.status === 401) {
