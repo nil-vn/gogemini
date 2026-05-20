@@ -182,3 +182,59 @@ func TestAdminDashboardMetricsParity(t *testing.T) {
 }
 
 func itoa(v int64) string { return fmt.Sprintf("%d", v) }
+
+func TestAdminSystemSettingsAPI(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/system", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("get settings code=%d body=%s", w.Code, w.Body.String())
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodPut, "/api/admin/system", []byte(`{"currency":"USD","theme":"light","language":"en"}`)))
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("update settings code=%d body=%s", w.Code, w.Body.String())
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/system", nil))
+	var updated map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &updated); err != nil {
+		t.Fatal(err)
+	}
+	if updated["currency"] != "USD" || updated["theme"] != "light" || updated["language"] != "en" {
+		t.Fatalf("unexpected updated settings: %+v", updated)
+	}
+}
+
+func TestAdminSystemSettingsValidationAndAuthorization(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
+
+	cases := []string{
+		`{}`,
+		`{"timezone":"UTC"}`,
+		`{"currency":"BTC"}`,
+		`{"theme":"neon"}`,
+		`{"language":"fr"}`,
+	}
+	for _, body := range cases {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, authedReq(http.MethodPut, "/api/admin/system", []byte(body)))
+		if w.Code != http.StatusBadRequest {
+			t.Fatalf("expected bad request for payload=%s, got code=%d body=%s", body, w.Code, w.Body.String())
+		}
+	}
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/admin/system", nil)
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected unauthorized without session, got code=%d body=%s", w.Code, w.Body.String())
+	}
+}
