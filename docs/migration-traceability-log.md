@@ -34,3 +34,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Cần team tuân thủ kỷ luật append log sau mỗi task.
 - Next Action:
   - Bắt đầu giao task A1 bằng prompt chuẩn trong execution kit.
+
+## 2026-05-20 | A1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (see commit history)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Tạo parity matrix v1 dạng table gồm feature, route hiện tại, expected behavior.
+  - Khóa rõ phạm vi in-scope và out-of-scope cho v1 parity.
+  - Đánh dấu item outstanding checklist tương ứng đã hoàn tất trong phạm vi A1.
+- Files changed:
+  - docs/migration-parity-v1-matrix.md
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `rg -n "A1|parity matrix|Feature parity matrix" docs/*.md` => PASS
+  - `git diff -- docs/migration-parity-v1-matrix.md docs/migration-outstanding-production-checklist.md docs/migration-traceability-log.md` => PASS
+- DoD Mapping:
+  - [x] Có checklist parity v1 dạng table (feature, route hiện tại, expected behavior).
+- Related Outstanding Checklist Items:
+  - Phase 0 / Feature parity matrix theo từng module.
+- Risks/Blockers:
+  - Route legacy chi tiết từng endpoint CRUD/API cần A2 audit để khóa chính xác 100% theo code thực tế.
+- Next Action:
+  - Chuyển sang A2 để audit endpoint/payload/behavior và gắn lại route cụ thể mức API contract.
