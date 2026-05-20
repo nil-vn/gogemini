@@ -496,3 +496,32 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Chưa có automated frontend unit/integration tests cho D3 flow; đây là hạng mục outstanding riêng sẽ xử lý ở task sau.
 - Next Action:
   - Chuyển D4 để hoàn thiện search/system settings/i18n và giảm hardcode UI còn lại theo phase plan.
+
+## 2026-05-20 | D4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện route `/admin/system` để đọc/cập nhật System settings qua API và hỗ trợ language/theme switch từ UI.
+  - Bổ sung global search UI gọi `/api/admin/search?q=...` và hiển thị kết quả đa module trong admin shell.
+  - Tách dictionary i18n frontend (en/vi), thay thế phần lớn text chính hardcoded bằng key translation có fallback.
+- Files changed:
+  - frontend/src/App.svelte
+  - frontend/src/components/ModuleTable.svelte
+  - frontend/src/components/SettingsForm.svelte
+  - frontend/src/lib/i18n.ts
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `npm --prefix frontend ci` => PASS
+  - `npm --prefix frontend run check` => PASS
+  - `npm --prefix frontend run build` => PASS
+- DoD Mapping:
+  - [x] Ô search global/module.
+  - [x] Màn settings + language/theme switch.
+  - [x] Text hiển thị qua key i18n, không hardcode nội dung chính.
+- Related Outstanding Checklist Items:
+  - Phase 3 / Hoàn thiện i18n (tách dictionary, loại bỏ hardcode chính, fallback language).
+- Risks/Blockers:
+  - `LoginForm` placeholder/button vẫn hardcoded ở mức tối thiểu, không thuộc phần “nội dung chính” admin module; có thể đưa vào đợt i18n polish tiếp theo nếu cần full coverage.
+- Next Action:
+  - Chuyển D5 để hoàn thiện upload UI + preview.
