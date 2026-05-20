@@ -26,10 +26,10 @@ func NewRouter(cfg config.Config, db *sql.DB) *gin.Engine {
 		defer cancel()
 
 		if err := db.PingContext(ctx); err != nil {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"status": "unhealthy", "db": "down", "error": err.Error()})
+			c.JSON(http.StatusServiceUnavailable, gin.H{"status": "unhealthy", "app": "up", "db": "down", "error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "db": "up"})
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "app": "up", "db": "up"})
 	})
 
 	return r
