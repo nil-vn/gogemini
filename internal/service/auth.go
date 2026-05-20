@@ -1,12 +1,14 @@
 package service
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -25,5 +27,34 @@ func CheckWerkzeugPasswordHash(encoded, password string) bool {
 }
 
 func BuildSessionToken(userID int64, secret string) string {
-	return fmt.Sprintf("u:%d", userID)
+	expiresAt := time.Now().UTC().Add(24 * time.Hour).Unix()
+	payload := fmt.Sprintf("%d:%d", userID, expiresAt)
+	sig := signPayload(payload, secret)
+	return payload + ":" + sig
+}
+
+func ValidateSessionToken(token, secret string) (int64, bool) {
+	parts := strings.Split(token, ":")
+	if len(parts) != 3 {
+		return 0, false
+	}
+	payload := parts[0] + ":" + parts[1]
+	if subtle.ConstantTimeCompare([]byte(signPayload(payload, secret)), []byte(parts[2])) != 1 {
+		return 0, false
+	}
+	uid, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil || uid <= 0 {
+		return 0, false
+	}
+	expiresAt, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil || time.Now().UTC().Unix() > expiresAt {
+		return 0, false
+	}
+	return uid, true
+}
+
+func signPayload(payload, secret string) string {
+	h := hmac.New(sha256.New, []byte(secret))
+	_, _ = h.Write([]byte(payload))
+	return base64.RawURLEncoding.EncodeToString(h.Sum(nil))
 }

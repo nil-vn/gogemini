@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"gogemini/internal/config"
+	"gogemini/internal/service"
 )
 
 func setupAdminTestDB(t *testing.T) *sql.DB {
@@ -36,7 +37,7 @@ func setupAdminTestDB(t *testing.T) *sql.DB {
 
 func authedReq(method, path string, body []byte) *http.Request {
 	req := httptest.NewRequest(method, path, bytes.NewReader(body))
-	req.AddCookie(&http.Cookie{Name: "session", Value: "ok"})
+	req.AddCookie(&http.Cookie{Name: "session", Value: service.BuildSessionToken(1, "test-secret")})
 	req.Header.Set("Content-Type", "application/json")
 	return req
 }
@@ -44,7 +45,7 @@ func authedReq(method, path string, body []byte) *http.Request {
 func TestAdminCRUDFlows(t *testing.T) {
 	db := setupAdminTestDB(t)
 	defer db.Close()
-	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
 
 	cases := []struct{ name, base, create, update string }{
 		{"users", "/api/admin/users", `{"username":"u1","password_hash":"x"}`, `{"username":"u2"}`},
@@ -92,7 +93,7 @@ func TestAdminCRUDFlows(t *testing.T) {
 func TestAdminSearchParity(t *testing.T) {
 	db := setupAdminTestDB(t)
 	defer db.Close()
-	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
 
 	seed := []string{
 		`INSERT INTO users (username, role, email, password_hash, status) VALUES ('search_user','admin','search@example.com','x','active');`,
@@ -140,7 +141,7 @@ func TestAdminSearchParity(t *testing.T) {
 func TestAdminDashboardMetricsParity(t *testing.T) {
 	db := setupAdminTestDB(t)
 	defer db.Close()
-	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
 
 	now := time.Now().UTC()
 	currentMonth := time.Date(now.Year(), now.Month(), 15, 10, 0, 0, 0, time.UTC).Format(time.RFC3339)
