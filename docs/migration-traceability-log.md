@@ -130,3 +130,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Còn warnings deprecated từ stack legacy (không chặn A4, sẽ xử lý ở phase hardening).
 - Next Action:
   - Dùng baseline này làm mốc cho E2 API parity và E1/E2E critical flows.
+
+## 2026-05-20 | B1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Xác nhận và chốt scaffold backend Go trong phạm vi B1 (module + structure + package convention).
+  - Bổ sung artifact mô tả chuẩn scaffold để làm baseline cho B2/B3/B4.
+  - Kiểm chứng DoD bằng lệnh `go test ./...`.
+- Files changed:
+  - docs/migration-b1-go-scaffold.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+- DoD Mapping:
+  - [x] Tạo cấu trúc `cmd/`, `internal/`, `migrations/`, `scripts/`.
+  - [x] Thiết lập module Go, convention package.
+  - [x] `go test ./...` chạy được (kể cả khi test rỗng).
+- Related Outstanding Checklist Items:
+  - Phase 1 foundation hardening items vẫn mở (sẽ xử lý ở B2/B3/B4): env strategy, structured logging, error envelope, readiness/liveness, graceful shutdown.
+- Risks/Blockers:
+  - Không có blocker trong phạm vi B1.
+- Next Action:
+  - Chuyển B2 để chuẩn hóa env strategy (Windows-first) và sample env.
