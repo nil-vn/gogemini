@@ -12,4 +12,6 @@ $env:DB_DSN = "file:app.db?cache=shared"
 $env:CORS_ORIGIN = "*"
 $env:UPLOAD_DIR = "static"
 
+if (!(Test-Path "logs")) { New-Item -ItemType Directory -Path "logs" | Out-Null }
+
 ./bin/server.exe

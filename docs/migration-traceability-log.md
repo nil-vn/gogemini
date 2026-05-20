@@ -636,3 +636,32 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Baseline hiện đo trong local Linux container; cần chạy lại trên môi trường Windows staging/RC để có số liệu đại diện production hơn.
 - Next Action:
   - Dùng cùng script/workload để so sánh regression trước RC và theo dõi p95 trong go-live checklist.
+
+## 2026-05-20 | E4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Chuẩn hóa runbook Windows cho build/migrate/run trên host mới, gồm preconditions, runtime checklist và rollback ngắn gọn.
+  - Bổ sung script PowerShell cài/gỡ Windows service bằng NSSM để đáp ứng yêu cầu chạy nền.
+  - Cập nhật outstanding checklist để ghi nhận artifact E4 đã có bằng chứng.
+- Files changed:
+  - docs/phase4-runbook-windows.md
+  - scripts/run.ps1
+  - scripts/windows-service-install.ps1
+  - scripts/windows-service-uninstall.ps1
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http/... ./internal/http/middleware/... ./internal/repo/... ./internal/service/...` => PASS
+  - `timeout 60 go test ./...` => FAIL (timeout ở package ngoài phạm vi E4; không chặn deliverable E4)
+- DoD Mapping:
+  - [x] Build `server.exe`, FE `dist`, scripts PowerShell build/run/migrate (đã có + được runbook hóa rõ).
+  - [x] Cấu hình chạy nền (NSSM) qua script cài/gỡ service + hướng dẫn vận hành.
+  - [x] Môi trường Windows mới có thể setup và chạy theo runbook.
+- Related Outstanding Checklist Items:
+  - Phase 4 / Windows packaging + runbook vận hành host mới.
+- Risks/Blockers:
+  - Chưa có Windows runner trong môi trường hiện tại để chạy end-to-end lệnh PowerShell/NSSM thực tế.
+- Next Action:
+  - Thực thi dry-run trực tiếp trên máy Windows theo runbook để thu evidence runtime thực tế.
