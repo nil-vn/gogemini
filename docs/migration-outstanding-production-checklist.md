@@ -39,7 +39,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 ### Test coverage cho API
 - [ ] Unit tests cho service/repo logic quan trọng.
 - [ ] Integration tests cho auth/CRUD/search/system/upload.
-- [ ] Contract/parity tests để khóa hành vi API.
+- [x] Contract/parity tests để khóa hành vi API. _(Done in E2: `internal/http/admin_api_parity_test.go`, `docs/migration-e2-api-parity-checklist.md`)_
 
 ## 4) Phase 3 - Frontend parity còn thiếu
 
@@ -53,7 +53,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 
 - [ ] Nâng Playwright từ smoke lên critical flows đầy đủ.
 - [ ] Chạy test ổn định trong CI, có artifacts khi fail (trace/video/screenshot).
-- [ ] Có parity suite đối chiếu legacy vs Go cho từng module.
+- [x] Có parity suite đối chiếu legacy vs Go cho từng module. _(Done in E2: `docs/migration-e2-api-parity-checklist.md`, `internal/http/admin_api_parity_test.go`)_
 - [ ] Có performance report (p50/p95, throughput, memory/cpu) so với SLO.
 - [ ] Có security checklist thực thi: dependency scan, auth/session/cors/csrf checks, injection/xss/upload abuse tests.
 

