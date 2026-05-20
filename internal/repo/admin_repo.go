@@ -17,6 +17,7 @@ type ListQuery struct {
 	Sort     string
 	Order    string
 	Search   string
+	Status   string
 }
 
 type ListResult[T any] struct {
@@ -73,13 +74,14 @@ func (r AdminRepo) ListUsers(q ListQuery) (ListResult[domain.User], error) {
 	page, pageSize, sortCol, order := normalizeListQuery(q, map[string]string{"id": "id", "username": "username", "email": "email", "status": "status"})
 	needle := "%" + strings.TrimSpace(q.Search) + "%"
 	args := []any{needle, needle, needle}
-	countQ := `SELECT COUNT(*) FROM users WHERE (? = '%%' OR username LIKE ? OR email LIKE ?)`
+	countQ := `SELECT COUNT(*) FROM users WHERE (? = '%%' OR username LIKE ? OR email LIKE ?) AND (? = '' OR status = ?)`
 	var total int64
-	if err := r.DB.QueryRow(countQ, args...).Scan(&total); err != nil {
+	countArgs := append(args, strings.TrimSpace(q.Status), strings.TrimSpace(q.Status))
+	if err := r.DB.QueryRow(countQ, countArgs...).Scan(&total); err != nil {
 		return ListResult[domain.User]{}, err
 	}
-	listQ := fmt.Sprintf(`SELECT id, username, COALESCE(role,''), COALESCE(email,''), COALESCE(status,'') FROM users WHERE (? = '%%' OR username LIKE ? OR email LIKE ?) ORDER BY %s %s LIMIT ? OFFSET ?`, sortCol, order)
-	items, err := queryList(r.DB, listQ, append(args, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.User, error) {
+	listQ := fmt.Sprintf(`SELECT id, username, COALESCE(role,''), COALESCE(email,''), COALESCE(status,'') FROM users WHERE (? = '%%' OR username LIKE ? OR email LIKE ?) AND (? = '' OR status = ?) ORDER BY %s %s LIMIT ? OFFSET ?`, sortCol, order)
+	items, err := queryList(r.DB, listQ, append(countArgs, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.User, error) {
 		var v domain.User
 		return v, rows.Scan(&v.ID, &v.Username, &v.Role, &v.Email, &v.Status)
 	})
@@ -89,13 +91,14 @@ func (r AdminRepo) ListCars(q ListQuery) (ListResult[domain.Car], error) {
 	page, pageSize, sortCol, order := normalizeListQuery(q, map[string]string{"id": "id", "name": "name", "status": "status", "vin": "vin"})
 	needle := "%" + strings.TrimSpace(q.Search) + "%"
 	args := []any{needle, needle, needle, needle}
-	countQ := `SELECT COUNT(*) FROM car WHERE (? = '%%' OR name LIKE ? OR vin LIKE ? OR branch LIKE ?)`
+	countQ := `SELECT COUNT(*) FROM car WHERE (? = '%%' OR name LIKE ? OR vin LIKE ? OR branch LIKE ?) AND (? = '' OR status = ?)`
 	var total int64
-	if err := r.DB.QueryRow(countQ, args...).Scan(&total); err != nil {
+	countArgs := append(args, strings.TrimSpace(q.Status), strings.TrimSpace(q.Status))
+	if err := r.DB.QueryRow(countQ, countArgs...).Scan(&total); err != nil {
 		return ListResult[domain.Car]{}, err
 	}
-	listQ := fmt.Sprintf(`SELECT id, COALESCE(name,''), COALESCE(branch,''), COALESCE(model,''), COALESCE(vin,''), COALESCE(status,''), COALESCE(car_situation,''), COALESCE(selling_price,0) FROM car WHERE (? = '%%' OR name LIKE ? OR vin LIKE ? OR branch LIKE ?) ORDER BY %s %s LIMIT ? OFFSET ?`, sortCol, order)
-	items, err := queryList(r.DB, listQ, append(args, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.Car, error) {
+	listQ := fmt.Sprintf(`SELECT id, COALESCE(name,''), COALESCE(branch,''), COALESCE(model,''), COALESCE(vin,''), COALESCE(status,''), COALESCE(car_situation,''), COALESCE(selling_price,0) FROM car WHERE (? = '%%' OR name LIKE ? OR vin LIKE ? OR branch LIKE ?) AND (? = '' OR status = ?) ORDER BY %s %s LIMIT ? OFFSET ?`, sortCol, order)
+	items, err := queryList(r.DB, listQ, append(countArgs, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.Car, error) {
 		var v domain.Car
 		return v, rows.Scan(&v.ID, &v.Name, &v.Branch, &v.Model, &v.VIN, &v.Status, &v.Situation, &v.SellingPrice)
 	})
@@ -105,13 +108,14 @@ func (r AdminRepo) ListCustomers(q ListQuery) (ListResult[domain.Customer], erro
 	page, pageSize, sortCol, order := normalizeListQuery(q, map[string]string{"id": "id", "name": "name", "phone": "phone", "status": "status"})
 	needle := "%" + strings.TrimSpace(q.Search) + "%"
 	args := []any{needle, needle, needle}
-	countQ := `SELECT COUNT(*) FROM customer WHERE (? = '%%' OR name LIKE ? OR phone LIKE ?)`
+	countQ := `SELECT COUNT(*) FROM customer WHERE (? = '%%' OR name LIKE ? OR phone LIKE ?) AND (? = '' OR status = ?)`
 	var total int64
-	if err := r.DB.QueryRow(countQ, args...).Scan(&total); err != nil {
+	countArgs := append(args, strings.TrimSpace(q.Status), strings.TrimSpace(q.Status))
+	if err := r.DB.QueryRow(countQ, countArgs...).Scan(&total); err != nil {
 		return ListResult[domain.Customer]{}, err
 	}
-	listQ := fmt.Sprintf(`SELECT id, COALESCE(name,''), COALESCE(phone,''), COALESCE(address,''), COALESCE(status,'') FROM customer WHERE (? = '%%' OR name LIKE ? OR phone LIKE ?) ORDER BY %s %s LIMIT ? OFFSET ?`, sortCol, order)
-	items, err := queryList(r.DB, listQ, append(args, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.Customer, error) {
+	listQ := fmt.Sprintf(`SELECT id, COALESCE(name,''), COALESCE(phone,''), COALESCE(address,''), COALESCE(status,'') FROM customer WHERE (? = '%%' OR name LIKE ? OR phone LIKE ?) AND (? = '' OR status = ?) ORDER BY %s %s LIMIT ? OFFSET ?`, sortCol, order)
+	items, err := queryList(r.DB, listQ, append(countArgs, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.Customer, error) {
 		var v domain.Customer
 		return v, rows.Scan(&v.ID, &v.Name, &v.Phone, &v.Address, &v.Status)
 	})
@@ -121,13 +125,14 @@ func (r AdminRepo) ListTransactions(q ListQuery) (ListResult[domain.Transaction]
 	page, pageSize, sortCol, order := normalizeListQuery(q, map[string]string{"id": "id", "status": "status", "purchase_date": "purchase_date", "selling_price": "selling_price"})
 	needle := "%" + strings.TrimSpace(q.Search) + "%"
 	args := []any{needle, needle}
-	countQ := "SELECT COUNT(*) FROM `transaction` WHERE (? = '%%' OR status LIKE ?)"
+	countQ := "SELECT COUNT(*) FROM `transaction` WHERE (? = '%%' OR status LIKE ?) AND (? = '' OR status = ?)"
 	var total int64
-	if err := r.DB.QueryRow(countQ, args...).Scan(&total); err != nil {
+	countArgs := append(args, strings.TrimSpace(q.Status), strings.TrimSpace(q.Status))
+	if err := r.DB.QueryRow(countQ, countArgs...).Scan(&total); err != nil {
 		return ListResult[domain.Transaction]{}, err
 	}
-	listQ := fmt.Sprintf("SELECT id, COALESCE(customer_id,0), COALESCE(status,''), COALESCE(selling_price,0), COALESCE(purchase_date,'') FROM `transaction` WHERE (? = '%%' OR status LIKE ?) ORDER BY %s %s LIMIT ? OFFSET ?", sortCol, order)
-	items, err := queryList(r.DB, listQ, append(args, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.Transaction, error) {
+	listQ := fmt.Sprintf("SELECT id, COALESCE(customer_id,0), COALESCE(status,''), COALESCE(selling_price,0), COALESCE(purchase_date,'') FROM `transaction` WHERE (? = '%%' OR status LIKE ?) AND (? = '' OR status = ?) ORDER BY %s %s LIMIT ? OFFSET ?", sortCol, order)
+	items, err := queryList(r.DB, listQ, append(countArgs, pageSize, (page-1)*pageSize), func(rows *sql.Rows) (domain.Transaction, error) {
 		var v domain.Transaction
 		return v, rows.Scan(&v.ID, &v.CustomerID, &v.Status, &v.SellingPrice, &v.PurchaseDate)
 	})

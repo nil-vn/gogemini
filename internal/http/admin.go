@@ -115,22 +115,38 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 	})
 
 	admin.GET("/users", func(c *gin.Context) {
-		q := parseListQuery(c)
+		q, err := parseListQuery(c, []string{"id", "username", "email", "status"})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		data, err := repository.ListUsers(q)
 		respondList(c, data, err, q)
 	})
 	admin.GET("/cars", func(c *gin.Context) {
-		q := parseListQuery(c)
+		q, err := parseListQuery(c, []string{"id", "name", "status", "vin"})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		data, err := repository.ListCars(q)
 		respondList(c, data, err, q)
 	})
 	admin.GET("/customers", func(c *gin.Context) {
-		q := parseListQuery(c)
+		q, err := parseListQuery(c, []string{"id", "name", "phone", "status"})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		data, err := repository.ListCustomers(q)
 		respondList(c, data, err, q)
 	})
 	admin.GET("/transactions", func(c *gin.Context) {
-		q := parseListQuery(c)
+		q, err := parseListQuery(c, []string{"id", "status", "purchase_date", "selling_price"})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		data, err := repository.ListTransactions(q)
 		respondList(c, data, err, q)
 	})
@@ -286,6 +302,17 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 		respondMap(c, m, err)
 	})
 	admin.PUT("/system", func(c *gin.Context) {
+		token, _ := c.Cookie("session")
+		uid, ok := service.ValidateSessionToken(token, authSecret)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		u, err := repository.GetUser(uid)
+		if err != nil || !strings.EqualFold(strings.TrimSpace(u.Role), "admin") {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
 		var req map[string]string
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(400, gin.H{"error": "invalid body"})
@@ -391,10 +418,28 @@ func deleteByID(c *gin.Context, repository repo.AdminRepo, table string) {
 	c.Status(204)
 }
 
-func parseListQuery(c *gin.Context) repo.ListQuery {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	return repo.ListQuery{Page: page, PageSize: pageSize, Sort: c.Query("sort"), Order: c.Query("order"), Search: c.Query("q")}
+func parseListQuery(c *gin.Context, allowedSort []string) (repo.ListQuery, error) {
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		return repo.ListQuery{}, errors.New("page must be >= 1")
+	}
+	pageSize, err := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	if err != nil || pageSize < 1 || pageSize > 100 {
+		return repo.ListQuery{}, errors.New("page_size must be in range 1..100")
+	}
+	sort := strings.TrimSpace(c.DefaultQuery("sort", "id"))
+	validSort := map[string]struct{}{}
+	for _, s := range allowedSort {
+		validSort[s] = struct{}{}
+	}
+	if _, ok := validSort[sort]; !ok {
+		return repo.ListQuery{}, fmt.Errorf("sort must be one of: %s", strings.Join(allowedSort, ","))
+	}
+	order := strings.ToLower(strings.TrimSpace(c.DefaultQuery("order", "desc")))
+	if order != "asc" && order != "desc" {
+		return repo.ListQuery{}, errors.New("order must be asc or desc")
+	}
+	return repo.ListQuery{Page: page, PageSize: pageSize, Sort: sort, Order: order, Search: c.Query("q"), Status: strings.TrimSpace(c.Query("status"))}, nil
 }
 func getByID(c *gin.Context, fn func(id int64) (any, error)) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
