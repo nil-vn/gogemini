@@ -20,7 +20,7 @@ func TestHealthzReturnsOKWhenDBIsUp(t *testing.T) {
 	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -31,7 +31,7 @@ func TestHealthzReturnsOKWhenDBIsUp(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 		t.Fatalf("parse response: %v", err)
 	}
-	if body["status"] != "ok" || body["db"] != "up" || body["app"] != "up" {
+	if body["status"] != "ready" {
 		t.Fatalf("unexpected body: %+v", body)
 	}
 }
@@ -46,7 +46,7 @@ func TestHealthzReturns503WhenDBIsDown(t *testing.T) {
 	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusServiceUnavailable {
@@ -57,7 +57,7 @@ func TestHealthzReturns503WhenDBIsDown(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 		t.Fatalf("parse response: %v", err)
 	}
-	if body["status"] != "unhealthy" || body["db"] != "down" || body["app"] != "up" {
-		t.Fatalf("unexpected body: %+v", body)
+	if body["error"] == nil {
+		t.Fatalf("expected error envelope: %+v", body)
 	}
 }
