@@ -25,7 +25,6 @@ Tài liệu này hướng dẫn **từng bước** để:
 - Node.js 20+
 - npm
 - Git
-- `migrate_script.sh` / `migrate_script.ps1` sẽ tự thử cài `golang-migrate` bằng `go install` nếu máy chưa có `migrate` CLI.
 
 ### Windows
 - Go
@@ -33,7 +32,6 @@ Tài liệu này hướng dẫn **từng bước** để:
 - npm
 - Git
 - PowerShell 5.1+ hoặc PowerShell 7+
-- `migrate_script.sh` / `migrate_script.ps1` sẽ tự thử cài `golang-migrate` bằng `go install` nếu máy chưa có `migrate` CLI.
 
 > Gợi ý kiểm tra nhanh:
 >
@@ -61,49 +59,31 @@ UPLOAD_DIR=static/uploads
 
 ---
 
-## 3.1) Database migration (bắt buộc trước khi chạy backend)
+## 3.1) Tự động khởi tạo database + tables + default admin
 
-Backend Go **không tự tạo bảng** khi boot. Kết nối SQLite thành công chỉ tạo file DB vật lý; schema chỉ có sau khi chạy migrations.
+Backend Go **tự tạo schema** khi boot:
+- Nếu DB file chưa tồn tại (ví dụ `app.db`) thì SQLite sẽ tạo file.
+- App sẽ tự chạy `CREATE TABLE IF NOT EXISTS` cho toàn bộ bảng hệ thống (`users`, `car`, `customer`, `transaction`, `transaction_item`, `transaction_car`, `car_image`, `customer_image`, `config`).
+- Không cần chạy script migration thủ công.
 
-### Linux/macOS
+### Cấu hình default admin trong `.env` (tuỳ chọn)
 
-```bash
-export DB_URL="sqlite3://app.db"
-migrate -path migrations -database "$DB_URL" up
+Để app tự tạo/cập nhật admin mặc định ngay khi khởi động, set các biến sau:
+
+```env
+DEFAULT_ADMIN_USERNAME=admin
+DEFAULT_ADMIN_PASSWORD=your-strong-password
+DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_ROLE=admin
+DEFAULT_ADMIN_STATUS=active
 ```
 
-### Windows (PowerShell)
-
-```powershell
-$env:DB_URL="sqlite3://app.db"
-./scripts/migrate.ps1
-```
-
-### Bootstrap migration + default admin (Linux/Windows)
-
-Nếu cần vừa migrate vừa tạo/cập nhật user admin mặc định ngay trong một lệnh:
-
-**Linux**
-
-```bash
-./scripts/migrate_script.sh --username=admin --password=password
-```
-
-**Windows (PowerShell)**
-
-```powershell
-./scripts/migrate_script.ps1 -Username admin -Password password
-```
-
-Tùy chọn thêm (cả 2 script):
-- cấu hình DB migration: `--db-url` / `-DbUrl`
-- cấu hình DB app: `--db-driver`, `--db-dsn` / `-DbDriver`, `-DbDsn`
-- thông tin user: `--role`, `--status`, `--email` / `-Role`, `-Status`, `-Email`
-
-> Ghi chú: script bootstrap sẽ tạo mới nếu user chưa tồn tại, hoặc cập nhật password/role/status nếu user đã có theo username/email.
-> Ghi chú: `GET /readyz` chỉ kiểm tra DB có thể ping được, **không** kiểm tra schema đã có đủ bảng.
-
----
+Quy tắc:
+- `DEFAULT_ADMIN_USERNAME` + `DEFAULT_ADMIN_PASSWORD`: **bắt buộc** nếu muốn bootstrap admin.
+- `DEFAULT_ADMIN_EMAIL`: optional, mặc định `<username>@local`.
+- `DEFAULT_ADMIN_ROLE`: optional, mặc định `admin`.
+- `DEFAULT_ADMIN_STATUS`: optional, mặc định `active`.
+- Nếu user đã tồn tại theo `username` hoặc `email`, app sẽ update password/role/status theo giá trị mới.
 
 ## 4) DEV mode (backend & frontend tách biệt)
 
@@ -117,14 +97,7 @@ npm install
 cd ..
 ```
 
-### Bước 2: Apply DB migrations (Terminal 1)
-
-```bash
-export DB_URL="sqlite3://app.db"
-migrate -path migrations -database "$DB_URL" up
-```
-
-### Bước 3: Chạy backend server (Terminal 1)
+### Bước 2: Chạy backend server (Terminal 1)
 
 ```bash
 export SERVER_ADDR=":8080"
@@ -135,14 +108,14 @@ export UPLOAD_DIR="static/uploads"
 go run ./cmd/server
 ```
 
-### Bước 4: Chạy frontend dev server (Terminal 2)
+### Bước 3: Chạy frontend dev server (Terminal 2)
 
 ```bash
 cd frontend
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-### Bước 5: Verify
+### Bước 4: Verify
 
 ```bash
 curl http://localhost:8080/healthz
@@ -163,14 +136,7 @@ npm install
 cd ..
 ```
 
-### Bước 2: Apply DB migrations (PowerShell 1)
-
-```powershell
-$env:DB_URL="sqlite3://app.db"
-./scripts/migrate.ps1
-```
-
-### Bước 3: Chạy backend server (PowerShell 1)
+### Bước 2: Chạy backend server (PowerShell 1)
 
 ```powershell
 $env:SERVER_ADDR=":8080"
@@ -181,26 +147,14 @@ $env:UPLOAD_DIR="static/uploads"
 go run ./cmd/server
 ```
 
-> Có thể dùng script có sẵn:
->
-> ```powershell
-> ./scripts/dev.ps1
-> ```
-
-### Bước 4: Chạy frontend dev server (PowerShell 2)
+### Bước 3: Chạy frontend dev server (PowerShell 2)
 
 ```powershell
 cd frontend
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-> Hoặc dùng script:
->
-> ```powershell
-> ./scripts/frontend-dev.ps1
-> ```
-
-### Bước 5: Verify
+### Bước 4: Verify
 
 ```powershell
 curl http://localhost:8080/healthz
@@ -235,14 +189,7 @@ Kết quả mong đợi:
 - `bin/server`
 - `frontend/dist/*`
 
-## 5.2 Apply migrations
-
-```bash
-export DB_URL="sqlite3://app.db"
-migrate -path migrations -database "$DB_URL" up
-```
-
-## 5.3 Launch
+## 5.2 Launch
 
 ```bash
 export SERVER_ADDR=":8080"
@@ -253,7 +200,7 @@ export UPLOAD_DIR="static/uploads"
 ./bin/server
 ```
 
-## 5.4 Smoke check
+## 5.3 Smoke check
 
 ```bash
 curl http://localhost:8080/healthz

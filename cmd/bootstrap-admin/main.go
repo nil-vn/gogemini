@@ -1,16 +1,13 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"log"
 
+	"gogemini/internal/service"
 	_ "modernc.org/sqlite"
-	"golang.org/x/crypto/pbkdf2"
 )
 
 func main() {
@@ -37,7 +34,7 @@ func main() {
 		*email = fmt.Sprintf("%s@local", *username)
 	}
 
-	hash, err := buildWerkzeugPBKDF2Hash(*password)
+	hash, err := service.BuildWerkzeugPasswordHash(*password)
 	if err != nil {
 		log.Fatalf("build password hash: %v", err)
 	}
@@ -60,16 +57,4 @@ func main() {
 		}
 		log.Printf("updated existing admin user credentials: %s", *username)
 	}
-}
-
-func buildWerkzeugPBKDF2Hash(password string) (string, error) {
-	const iterations = 260000
-	salt := make([]byte, 16)
-	if _, err := rand.Read(salt); err != nil {
-		return "", err
-	}
-	saltB64 := base64.RawURLEncoding.EncodeToString(salt)
-	derived := pbkdf2.Key([]byte(password), []byte(saltB64), iterations, sha256.Size, sha256.New)
-	hash := base64.StdEncoding.EncodeToString(derived)
-	return fmt.Sprintf("pbkdf2:sha256:%d$%s$%s", iterations, saltB64, hash), nil
 }
