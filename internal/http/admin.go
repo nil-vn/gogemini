@@ -18,8 +18,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"gogemini/internal/domain"
 	"gogemini/internal/config"
+	"gogemini/internal/domain"
 	"gogemini/internal/repo"
 	"gogemini/internal/service"
 )
@@ -35,16 +35,21 @@ func newLoginAttemptStore() *loginAttemptStore {
 }
 
 func (s *loginAttemptStore) allow(key string) bool {
-	s.mu.Lock(); defer s.mu.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if until, ok := s.lockedTo[key]; ok {
-		if time.Now().Before(until) { return false }
-		delete(s.lockedTo, key); delete(s.fails, key)
+		if time.Now().Before(until) {
+			return false
+		}
+		delete(s.lockedTo, key)
+		delete(s.fails, key)
 	}
 	return true
 }
 
 func (s *loginAttemptStore) fail(key string) {
-	s.mu.Lock(); defer s.mu.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.fails[key]++
 	if s.fails[key] >= 5 {
 		s.lockedTo[key] = time.Now().Add(15 * time.Minute)
@@ -52,7 +57,10 @@ func (s *loginAttemptStore) fail(key string) {
 }
 
 func (s *loginAttemptStore) success(key string) {
-	s.mu.Lock(); defer s.mu.Unlock(); delete(s.fails, key); delete(s.lockedTo, key)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.fails, key)
+	delete(s.lockedTo, key)
 }
 
 func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
@@ -67,28 +75,28 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 			Password string `json:"password"`
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+			writeError(c, http.StatusBadRequest, "INVALID_BODY", "invalid request body")
 			return
 		}
 		loginKey := strings.ToLower(strings.TrimSpace(req.Login))
 		if !attempts.allow(loginKey) {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many failed login attempts"})
+			writeError(c, http.StatusTooManyRequests, "AUTH_LOCKED", "too many failed login attempts")
 			return
 		}
 		u, hash, err := repository.FindUserByUsernameOrEmail(req.Login)
 		if err != nil || !service.CheckWerkzeugPasswordHash(hash, req.Password) {
 			attempts.fail(loginKey)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			writeError(c, http.StatusUnauthorized, "AUTH_INVALID_CREDENTIALS", "invalid credentials")
 			return
 		}
 		attempts.success(loginKey)
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("session", service.BuildSessionToken(u.ID, authSecret), 86400, "/", "", secureCookie, true)
+		c.SetCookie("session", service.BuildSessionToken(u.ID, authSecret), 3600, "/", "", secureCookie, true)
 		c.JSON(http.StatusOK, gin.H{"user": u})
 	})
 	r.POST("/api/auth/logout", func(c *gin.Context) {
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("session", "", -1, "/", "", secureCookie, true)
+		c.SetCookie("session", "", 0, "/", "", secureCookie, true)
 		c.Status(http.StatusNoContent)
 	})
 
@@ -96,11 +104,11 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 	admin.Use(func(c *gin.Context) {
 		token, err := c.Cookie("session")
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errorEnvelope{Error: apiError{Code: "AUTH_UNAUTHORIZED", Message: "unauthorized"}})
 			return
 		}
 		if _, ok := service.ValidateSessionToken(token, authSecret); !ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errorEnvelope{Error: apiError{Code: "AUTH_UNAUTHORIZED", Message: "unauthorized"}})
 			return
 		}
 		c.Next()

@@ -88,3 +88,12 @@ npx playwright test
 - Restore DB backup gần nhất.
 - Deploy lại binary cũ + `frontend/dist` cũ.
 - Chạy lại smoke tối thiểu (`healthz`, login, list users/cars).
+
+## 8) Security hardening operations (WBS-1)
+
+- Verify readiness/liveness split:
+  - `curl http://localhost:8080/livez`
+  - `curl http://localhost:8080/readyz`
+- Verify structured logs are JSON and include `request_id`.
+- Confirm login lockout behavior after 5 failures (expect `AUTH_LOCKED`).
+- Confirm auth/logout envelopes and cookie invalidation on logout.

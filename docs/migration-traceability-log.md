@@ -718,3 +718,36 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Một số evidence production chỉ có thể thu được khi chạy staging/prod window thực tế.
 - Next Action:
   - Triển khai WBS-1 (foundation + security hardening) trước, sau đó khóa dần phase gates theo thứ tự ưu tiên.
+
+## 2026-05-20 | WBS-1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Implemented foundation/security hardening items 1.2-1.7 (excluding 1.1 as requested).
+  - Added structured logging + redaction/sampling, standard error envelope taxonomy, livez/readyz split, graceful shutdown.
+  - Hardened auth/logout/session behavior and login protection with lockout/audit trail evidence.
+- Files changed:
+  - internal/http/middleware/logger.go
+  - internal/http/envelope.go
+  - internal/http/router.go
+  - internal/http/admin.go
+  - cmd/server/main.go
+  - docs/wbs1-foundation-security-hardening.md
+  - docs/phase4-runbook-windows.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+- DoD Mapping:
+  - [x] Structured logs + request-id + PII redaction policy + log sampling.
+  - [x] Error envelope chuẩn + error taxonomy/code map toàn API (auth/errors shared path).
+  - [x] Tách `/livez` và `/readyz`, readiness có dependency checks.
+  - [x] Graceful shutdown (timeout, inflight drain, close db/pool).
+  - [x] Auth hardening: logout chuẩn, cookie flags, session rotation, anti-fixation.
+  - [x] Login protection: rate limit + lockout + audit trail.
+- Related Outstanding Checklist Items:
+  - Phase 1 hardening + Phase 2 auth/session lockout items.
+- Risks/Blockers:
+  - Rate limit currently process-local memory; distributed deployments should use shared store.
+- Next Action:
+  - Continue WBS-2 API functional closure.
