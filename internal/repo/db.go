@@ -91,6 +91,6 @@ func ensureDefaultAdmin(db *sql.DB, cfg config.Config) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`UPDATE users SET password_hash=?, role=?, status=? WHERE id=?`, hash, role, status, id)
+	_, err = db.Exec(`UPDATE users SET username=?, email=?, password_hash=?, role=?, status=? WHERE id=?`, username, email, hash, role, status, id)
 	return err
 }

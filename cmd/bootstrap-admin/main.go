@@ -51,7 +51,7 @@ func main() {
 	case err != nil:
 		log.Fatalf("query existing user: %v", err)
 	default:
-		_, err = db.Exec(`UPDATE users SET password_hash=?, role=?, status=? WHERE id=?`, hash, *role, *status, id)
+		_, err = db.Exec(`UPDATE users SET username=?, email=?, password_hash=?, role=?, status=? WHERE id=?`, *username, *email, hash, *role, *status, id)
 		if err != nil {
 			log.Fatalf("update existing admin user: %v", err)
 		}
