@@ -281,6 +281,10 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 			c.JSON(400, gin.H{"error": "invalid body"})
 			return
 		}
+		if err := validateSystemSettingsInput(req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
 		if err := repository.UpsertSettings(req); err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
@@ -402,4 +406,27 @@ func respondMap(c *gin.Context, data any, err error) {
 		return
 	}
 	c.JSON(200, data)
+}
+
+func validateSystemSettingsInput(input map[string]string) error {
+	if len(input) == 0 {
+		return errors.New("at least one setting is required")
+	}
+	allowed := map[string]map[string]struct{}{
+		"currency": {"JPY": {}, "USD": {}, "VND": {}},
+		"theme":    {"dark": {}, "light": {}},
+		"language": {"vi": {}, "ja": {}, "en": {}},
+	}
+	for k, v := range input {
+		values, ok := allowed[k]
+		if !ok {
+			return fmt.Errorf("unsupported setting key: %s", k)
+		}
+		normalized := strings.TrimSpace(v)
+		if _, ok := values[normalized]; !ok {
+			return fmt.Errorf("invalid value for %s", k)
+		}
+		input[k] = normalized
+	}
+	return nil
 }

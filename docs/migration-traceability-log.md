@@ -366,3 +366,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Lockout hiện tại lưu in-memory theo instance; cần chuyển sang store phân tán nếu triển khai multi-instance production (ngoài scope C5).
 - Next Action:
   - Chuyển C6 để triển khai System settings API theo dependency chain.
+
+## 2026-05-20 | C6 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện API system settings qua `/api/admin/system` với read/update cho các key parity (`currency`, `theme`, `language`).
+  - Bổ sung validation key/value bắt buộc cho payload PUT để chặn key lạ, value không hợp lệ, và payload rỗng.
+  - Bổ sung integration tests cho GET/PUT settings và enforcement authorization (unauthenticated bị chặn).
+- Files changed:
+  - internal/http/admin.go
+  - internal/http/admin_crud_test.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http` => PASS
+- DoD Mapping:
+  - [x] Có endpoint GET/PUT settings + validation.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Search, dashboard, system, upload / System settings có validation key/value + authorization đầy đủ.
+  - Phase 2 / Test coverage cho API / Integration tests cho auth/CRUD/search/system/upload (đã bổ sung phần system).
+- Risks/Blockers:
+  - Tập giá trị allowed cho `currency/theme/language` đang hardcode theo phạm vi parity; nếu business mở rộng danh mục cần cập nhật contract + test tương ứng.
+- Next Action:
+  - Chuyển C7 để xử lý upload hardening theo dependency chain.
