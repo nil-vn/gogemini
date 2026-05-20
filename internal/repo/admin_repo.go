@@ -223,7 +223,16 @@ func (r AdminRepo) Dashboard() (map[string]int64, error) {
 	return counts, nil
 }
 func (r AdminRepo) SearchAll(q string) (map[string]any, error) {
-	needle := "%" + strings.TrimSpace(q) + "%"
+	query := strings.TrimSpace(q)
+	if query == "" {
+		return map[string]any{
+			"users":        []domain.User{},
+			"cars":         []domain.Car{},
+			"customers":    []domain.Customer{},
+			"transactions": []domain.Transaction{},
+		}, nil
+	}
+	needle := "%" + query + "%"
 	users, err := queryList(r.DB, `SELECT id, username, COALESCE(role,''), COALESCE(email,''), COALESCE(status,'') FROM users WHERE username LIKE ? OR email LIKE ? OR status LIKE ? ORDER BY id DESC LIMIT 20`, []any{needle, needle, needle}, func(rows *sql.Rows) (domain.User, error) {
 		var v domain.User
 		return v, rows.Scan(&v.ID, &v.Username, &v.Role, &v.Email, &v.Status)
