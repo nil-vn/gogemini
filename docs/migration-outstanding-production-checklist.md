@@ -4,7 +4,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 
 ## 1) Phase 0 - Discovery/Baseline artifacts còn thiếu
 
-- [ ] Feature parity matrix theo từng module (Auth, Users, Cars, Customers, Transactions, Dashboard, Search, System, Upload).
+- [x] Feature parity matrix theo từng module (Auth, Users, Cars, Customers, Transactions, Dashboard, Search, System, Upload). _(Done in A1: `docs/migration-parity-v1-matrix.md`)_
 - [ ] API baseline spec (OpenAPI/Swagger hoặc tài liệu tương đương) cho backend Go.
 - [ ] ERD + schema snapshot + data mapping rules từ legacy sang hệ mới.
 - [ ] Legacy smoke baseline report để làm mốc đối chiếu kết quả parity.
