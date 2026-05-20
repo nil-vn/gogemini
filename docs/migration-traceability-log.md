@@ -58,3 +58,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Route legacy chi tiết từng endpoint CRUD/API cần A2 audit để khóa chính xác 100% theo code thực tế.
 - Next Action:
   - Chuyển sang A2 để audit endpoint/payload/behavior và gắn lại route cụ thể mức API contract.
+
+## 2026-05-20 | A2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ 34f43b4
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Audit toàn bộ endpoint Flask hiện tại cho scope parity v1 (auth/dashboard/users/cars/customers/transactions/search/system/upload).
+  - Chuẩn hóa baseline contract ở dạng Markdown spec (endpoint, method, auth, payload, response, behavior).
+  - Đánh dấu outstanding item “API baseline spec” đã hoàn tất trong phạm vi A2.
+- Files changed:
+  - docs/migration-a2-api-contract-baseline.md
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `rg -n "@routes.route|login_required" app/admin/controllers app/homepage/controllers` => PASS
+  - `rg -n "A2|API baseline spec|migration-a2-api-contract-baseline" docs/*.md` => PASS
+- DoD Mapping:
+  - [x] Có API contract baseline (OpenAPI draft hoặc Markdown spec).
+- Related Outstanding Checklist Items:
+  - Phase 0 / API baseline spec (OpenAPI/Swagger hoặc tài liệu tương đương) cho backend Go.
+- Risks/Blockers:
+  - Baseline hiện tại là server-rendered HTML flow, nên khi chuyển REST cần task phase 2 map lại response contract JSON mà không lệch nghiệp vụ.
+- Next Action:
+  - Tiếp tục A3 để freeze schema + ERD + data mapping rules.
