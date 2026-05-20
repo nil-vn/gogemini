@@ -784,3 +784,47 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Validation/error envelope still mixed in some non-WBS-2 endpoints; global envelope unification tracked outside this scope.
 - Next Action:
   - Proceed with next WBS per audit priority after review sign-off.
+
+## 2026-05-20 | WBS-3 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Triển khai UX states loading/empty/error/retry đồng nhất trong FE admin shell.
+  - Đồng bộ validation FE-BE bằng shared validation rules + unit tests.
+  - Bổ sung baseline accessibility, i18n polish và deliverables checklist/coverage/QA sign-off.
+- Files changed:
+  - frontend/src/App.svelte
+  - frontend/src/lib/validation.ts
+  - frontend/src/lib/i18n.ts
+  - frontend/src/components/LoginForm.svelte
+  - frontend/src/components/UploadForm.svelte
+  - frontend/src/lib/__tests__/validation.test.ts
+  - frontend/vite.config.ts
+  - frontend/tsconfig.json
+  - frontend/package.json
+  - frontend/package-lock.json
+  - docs/wbs3-a11y-checklist-2026-05-20.md
+  - docs/wbs3-fe-coverage-report-2026-05-20.md
+  - docs/wbs3-qa-signoff-2026-05-20.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run test:unit` => PASS
+  - `cd frontend && npm run check` => PASS
+  - `cd frontend && npm run lint` => PASS
+  - `cd frontend && npm run build` => PASS
+- DoD Mapping:
+  - [x] UX states (loading/empty/error/retry) thống nhất trên luồng chính.
+  - [x] FE-BE validation sync qua shared schema rules.
+  - [x] Accessibility baseline: keyboard nav, labels, focus, status semantics.
+  - [x] i18n polish chuỗi chính + fallback translator mặc định.
+  - [x] FE tests unit/integration mức critical validation flow.
+- Related Outstanding Checklist Items:
+  - Phase 3 / validation sync + UX states.
+  - Phase 3 / i18n completion.
+  - Phase 3 / accessibility baseline.
+  - Phase 3 / frontend test coverage.
+- Risks/Blockers:
+  - Integration test UI flow sâu chưa mở rộng toàn module (phạm vi tiếp theo nếu cần).
+- Next Action:
+  - Chạy QA regression tích hợp backend staging trước phase gate review.
