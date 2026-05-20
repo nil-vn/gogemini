@@ -1,58 +1,268 @@
-# Flask Template
+# GoGemini - Hướng dẫn chạy local và build/release
 
-Template for Flask applications
+Tài liệu này hướng dẫn **từng bước** để:
 
-## Install dependencies
+1. Chạy app ở môi trường **dev** với **backend server** và **frontend server tách biệt**.
+2. Build và launch app ở môi trường gần production trên **Linux** và **Windows**.
+
+---
+
+## 1) Tổng quan kiến trúc runtime
+
+- **Backend (Go/Gin)** chạy mặc định tại `http://localhost:8080`.
+- **Frontend (Svelte + Vite)** khi chạy dev dùng Vite server (mặc định `http://localhost:5173`).
+- Health endpoints của backend:
+  - `GET /healthz`
+  - `GET /livez`
+  - `GET /readyz`
+
+---
+
+## 2) Prerequisites
+
+### Linux
+- Go (khuyến nghị bản stable mới)
+- Node.js 20+
+- npm
+- Git
+
+### Windows
+- Go
+- Node.js 20+
+- npm
+- Git
+- PowerShell 5.1+ hoặc PowerShell 7+
+
+> Gợi ý kiểm tra nhanh:
+>
+> - `go version`
+> - `node -v`
+> - `npm -v`
+
+---
+
+## 3) Cấu hình môi trường
+
+App tự đọc `.env` tại repo root (nếu có). OS env var có độ ưu tiên cao hơn `.env`.
+
+Tạo file `.env` (hoặc copy từ `.env.example` nếu có) với cấu hình tối thiểu:
+
+```env
+APP_ENV=development
+SERVER_ADDR=:8080
+DB_DRIVER=sqlite
+DB_DSN=file:app.db?cache=shared
+AUTH_SECRET=dev-change-me
+CORS_ORIGIN=*
+UPLOAD_DIR=static/uploads
+```
+
+---
+
+## 4) DEV mode (backend & frontend tách biệt)
+
+## 4.1 Linux
+
+### Bước 1: Cài dependencies frontend
 
 ```bash
-python3 -m venv venv  # on Windows, use "python -m venv venv" instead
-. venv/bin/activate   # on Windows, use "venv\Scripts\activate" instead
-pip install -r requirements\dev.txt # change to production.txt for production
+cd frontend
+npm install
+cd ..
 ```
 
-## Application structure
-
-```
---app/
-    |--admin/
-    |--homepage/
---config/
---instance/
---lang/
---log/
---requirements/
---static/
---templates/
---tests/
-...
-```
-
-This structure is just a template; you can modify it and add controllers or models as needed. 
-
-## Run application
+### Bước 2: Chạy backend server (Terminal 1)
 
 ```bash
-python main.py
+export SERVER_ADDR=":8080"
+export DB_DRIVER="sqlite"
+export DB_DSN="file:app.db?cache=shared"
+export CORS_ORIGIN="*"
+export UPLOAD_DIR="static/uploads"
+go run ./cmd/server
 ```
 
-The applications will always running on http://localhost:5000.
+### Bước 3: Chạy frontend dev server (Terminal 2)
 
-## Example routes
+```bash
+cd frontend
+npm run dev -- --host 0.0.0.0 --port 5173
+```
 
-- Homepage (`/`): Homepage
-- Admin (`/admin`): Admin dashboard
+### Bước 4: Verify
 
-## TBD
+```bash
+curl http://localhost:8080/healthz
+curl http://localhost:8080/readyz
+```
 
-- [] Migration with sample models
-- [] Sample layouts with CLI
-- [] Testcases
-- [] Structure logging implement
+Mở frontend: `http://localhost:5173`.
 
-## Contributions
+---
 
-Any contribution is welcome, just fork and submit your PR.
+## 4.2 Windows (PowerShell)
 
-## License
+### Bước 1: Cài dependencies frontend
 
-This project is licensed under the MIT License (see the `LICENSE` file for details).
+```powershell
+cd frontend
+npm install
+cd ..
+```
+
+### Bước 2: Chạy backend server (PowerShell 1)
+
+```powershell
+$env:SERVER_ADDR=":8080"
+$env:DB_DRIVER="sqlite"
+$env:DB_DSN="file:app.db?cache=shared"
+$env:CORS_ORIGIN="*"
+$env:UPLOAD_DIR="static/uploads"
+go run ./cmd/server
+```
+
+> Có thể dùng script có sẵn:
+>
+> ```powershell
+> ./scripts/dev.ps1
+> ```
+
+### Bước 3: Chạy frontend dev server (PowerShell 2)
+
+```powershell
+cd frontend
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+> Hoặc dùng script:
+>
+> ```powershell
+> ./scripts/frontend-dev.ps1
+> ```
+
+### Bước 4: Verify
+
+```powershell
+curl http://localhost:8080/healthz
+curl http://localhost:8080/readyz
+```
+
+Mở frontend: `http://localhost:5173`.
+
+---
+
+## 5) Build + Launch (Linux)
+
+## 5.1 Build
+
+### Bước 1: Build backend binary
+
+```bash
+mkdir -p bin
+go build -o bin/server ./cmd/server
+```
+
+### Bước 2: Build frontend static assets
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+Kết quả mong đợi:
+- `bin/server`
+- `frontend/dist/*`
+
+## 5.2 Launch
+
+```bash
+export SERVER_ADDR=":8080"
+export DB_DRIVER="sqlite"
+export DB_DSN="file:app.db?cache=shared"
+export CORS_ORIGIN="*"
+export UPLOAD_DIR="static/uploads"
+./bin/server
+```
+
+## 5.3 Smoke check
+
+```bash
+curl http://localhost:8080/healthz
+curl http://localhost:8080/livez
+curl http://localhost:8080/readyz
+```
+
+---
+
+## 6) Build + Launch (Windows)
+
+## 6.1 Build
+
+Dùng script chuẩn:
+
+```powershell
+./scripts/build.ps1
+```
+
+Kết quả mong đợi:
+- `bin/server.exe`
+- `frontend/dist/*`
+
+## 6.2 Launch
+
+Dùng script run:
+
+```powershell
+./scripts/run.ps1
+```
+
+Hoặc chạy trực tiếp:
+
+```powershell
+$env:SERVER_ADDR=":8080"
+$env:DB_DRIVER="sqlite"
+$env:DB_DSN="file:app.db?cache=shared"
+$env:CORS_ORIGIN="*"
+$env:UPLOAD_DIR="static/uploads"
+./bin/server.exe
+```
+
+## 6.3 Smoke check
+
+```powershell
+curl http://localhost:8080/healthz
+curl http://localhost:8080/livez
+curl http://localhost:8080/readyz
+```
+
+---
+
+## 7) Troubleshooting nhanh
+
+- `readyz` fail: kiểm tra `DB_DSN`, quyền ghi file SQLite, path thư mục upload.
+- Frontend gọi API bị CORS: kiểm tra `CORS_ORIGIN` ở backend.
+- Port conflict: đổi `SERVER_ADDR` (vd `:8081`) hoặc đổi port Vite (`--port 5174`).
+- Windows path lỗi: thử dùng slash `/` trong `UPLOAD_DIR` (`static/uploads`) hoặc path tuyệt đối Windows.
+
+---
+
+## 8) Lệnh nhanh (cheat sheet)
+
+### Dev tách backend/frontend
+
+- Backend: `go run ./cmd/server`
+- Frontend: `cd frontend && npm run dev`
+
+### Build release
+
+- Linux backend: `go build -o bin/server ./cmd/server`
+- Windows full build: `./scripts/build.ps1`
+- Frontend: `cd frontend && npm run build`
+
+### Health checks
+
+- `curl http://localhost:8080/healthz`
+- `curl http://localhost:8080/livez`
+- `curl http://localhost:8080/readyz`
