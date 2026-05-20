@@ -5,6 +5,7 @@ import statistics
 import subprocess
 import time
 import urllib.request
+import json
 
 
 def fetch(url: str, timeout: float) -> float:
@@ -42,6 +43,7 @@ def main():
     ap.add_argument("--concurrency", type=int, default=20)
     ap.add_argument("--pid", type=int, required=True)
     ap.add_argument("--timeout", type=float, default=5.0)
+    ap.add_argument("--json-out", default="")
     args = ap.parse_args()
 
     latencies = []
@@ -77,6 +79,19 @@ def main():
     print(f"throughput_rps={throughput:.2f}")
     print(f"memory_rss_mb avg={rss_avg_mb:.2f} peak={rss_peak_mb:.2f}")
     print(f"cpu_pct avg={cpu_avg:.2f}")
+    report = {
+        "url": args.url,
+        "requests": args.requests,
+        "concurrency": args.concurrency,
+        "latency_ms": {"p50": p50, "p95": p95, "p99": p99},
+        "throughput_rps": throughput,
+        "memory_rss_mb": {"avg": rss_avg_mb, "peak": rss_peak_mb},
+        "cpu_pct": {"avg": cpu_avg},
+    }
+    if args.json_out:
+        with open(args.json_out, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2)
+
 
 
 if __name__ == "__main__":
