@@ -53,7 +53,7 @@ SERVER_ADDR=:8080
 DB_DRIVER=sqlite
 DB_DSN=file:app.db?cache=shared
 AUTH_SECRET=dev-change-me
-CORS_ORIGIN=*
+CORS_ORIGIN=http://localhost:5173
 UPLOAD_DIR=static/uploads
 ```
 
@@ -103,7 +103,7 @@ cd ..
 export SERVER_ADDR=":8080"
 export DB_DRIVER="sqlite"
 export DB_DSN="file:app.db?cache=shared"
-export CORS_ORIGIN="*"
+export CORS_ORIGIN="http://localhost:5173"
 export UPLOAD_DIR="static/uploads"
 go run ./cmd/server
 ```
