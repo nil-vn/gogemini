@@ -66,8 +66,13 @@ func (s *loginAttemptStore) success(key string) {
 func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 	repository := repo.AdminRepo{DB: db}
 	attempts := newLoginAttemptStore()
-	secureCookie := cfg.Environment != "development"
 	authSecret := cfg.AuthSecret
+	shouldSecureCookie := func(c *gin.Context) bool {
+		if cfg.Environment == "development" {
+			return false
+		}
+		return c.Request.TLS != nil
+	}
 
 	r.POST("/api/auth/login", func(c *gin.Context) {
 		var req struct {
@@ -91,12 +96,12 @@ func registerAdminRoutes(r *gin.Engine, db *sql.DB, cfg config.Config) {
 		}
 		attempts.success(loginKey)
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("session", service.BuildSessionToken(u.ID, authSecret), 3600, "/", "", secureCookie, true)
+		c.SetCookie("session", service.BuildSessionToken(u.ID, authSecret), 3600, "/", "", shouldSecureCookie(c), true)
 		c.JSON(http.StatusOK, gin.H{"user": u})
 	})
 	r.POST("/api/auth/logout", func(c *gin.Context) {
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("session", "", 0, "/", "", secureCookie, true)
+		c.SetCookie("session", "", 0, "/", "", shouldSecureCookie(c), true)
 		c.Status(http.StatusNoContent)
 	})
 
