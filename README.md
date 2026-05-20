@@ -78,6 +78,28 @@ $env:DB_URL="sqlite3://app.db"
 ./scripts/migrate.ps1
 ```
 
+### Bootstrap migration + default admin (Linux/Windows)
+
+Nếu cần vừa migrate vừa tạo/cập nhật user admin mặc định ngay trong một lệnh:
+
+**Linux**
+
+```bash
+./scripts/migrate_script.sh --username=admin --password=password
+```
+
+**Windows (PowerShell)**
+
+```powershell
+./scripts/migrate_script.ps1 -Username admin -Password password
+```
+
+Tùy chọn thêm (cả 2 script):
+- cấu hình DB migration: `--db-url` / `-DbUrl`
+- cấu hình DB app: `--db-driver`, `--db-dsn` / `-DbDriver`, `-DbDsn`
+- thông tin user: `--role`, `--status`, `--email` / `-Role`, `-Status`, `-Email`
+
+> Ghi chú: script bootstrap sẽ tạo mới nếu user chưa tồn tại, hoặc cập nhật password/role/status nếu user đã có theo username/email.
 > Ghi chú: `GET /readyz` chỉ kiểm tra DB có thể ping được, **không** kiểm tra schema đã có đủ bảng.
 
 ---
