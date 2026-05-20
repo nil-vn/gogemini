@@ -1,37 +1,48 @@
+param(
+  [switch]$SkipBuild,
+  [switch]$SkipMigrate,
+  [int]$Port = 8080
+)
+
 $ErrorActionPreference = "Stop"
 Set-Location "$PSScriptRoot/.."
 
-Write-Host "== Phase 5 Cutover =="
+$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$logDir = "logs/cutover"
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+$logFile = Join-Path $logDir "cutover-$timestamp.log"
 
-if (!(Test-Path "bin/server.exe")) {
-  Write-Host "Build artifacts missing. Running build script..."
-  & "$PSScriptRoot/build.ps1"
+function Write-Log([string]$message) {
+  $line = "[$(Get-Date -Format s)] $message"
+  Write-Host $line
+  Add-Content -Path $logFile -Value $line
 }
 
-if (!(Test-Path "frontend/dist/index.html")) {
-  Write-Host "frontend/dist missing. Running build script..."
-  & "$PSScriptRoot/build.ps1"
+Write-Log "== Phase 5 Cutover =="
+
+if (-not $SkipBuild) {
+  if (!(Test-Path "bin/server.exe") -or !(Test-Path "frontend/dist/index.html")) {
+    Write-Log "Build artifacts missing. Running build script..."
+    & "$PSScriptRoot/build.ps1"
+  }
 }
 
-Write-Host "1) Backup DB"
+Write-Log "1) Backup DB"
 if (Test-Path "app.db") {
-  $ts = Get-Date -Format "yyyyMMdd-HHmmss"
-  Copy-Item "app.db" "app.db.backup.$ts"
-  Write-Host "Created backup: app.db.backup.$ts"
+  $backupFile = "app.db.backup.$timestamp"
+  Copy-Item "app.db" $backupFile
+  Write-Log "Created backup: $backupFile"
 } else {
-  Write-Host "app.db not found; skip backup"
+  Write-Log "app.db not found; skip backup"
 }
 
-Write-Host "2) Apply migrations"
-try {
+if (-not $SkipMigrate) {
+  Write-Log "2) Apply migrations"
   & "$PSScriptRoot/migrate.ps1"
-} catch {
-  Write-Host "Migration failed; aborting cutover"
-  exit 1
 }
 
-Write-Host "3) Start new service"
-$env:SERVER_ADDR = ":8080"
+Write-Log "3) Start new service"
+$env:SERVER_ADDR = ":$Port"
 $env:DB_DRIVER = "sqlite"
 $env:DB_DSN = "file:app.db?cache=shared"
 $env:CORS_ORIGIN = "*"
@@ -40,13 +51,14 @@ $env:UPLOAD_ROOT = "static"
 Start-Process -FilePath "./bin/server.exe" -NoNewWindow
 Start-Sleep -Seconds 2
 
-Write-Host "4) Smoke check /healthz"
-try {
-  $health = curl http://localhost:8080/healthz
-  Write-Host $health
-} catch {
-  Write-Host "Health check failed after cutover"
-  exit 1
-}
+Write-Log "4) Smoke checks"
+$base = "http://localhost:$Port"
+$health = curl "$base/healthz"
+$ready = curl "$base/readyz"
+$live = curl "$base/livez"
+Write-Log "healthz=$health"
+Write-Log "readyz=$ready"
+Write-Log "livez=$live"
 
-Write-Host "Cutover completed. Monitor logs for 24-72h per runbook."
+Write-Log "Cutover completed. Continue 24-72h hypercare monitoring per runbook."
+Write-Log "Evidence log: $logFile"

@@ -24,3 +24,8 @@
 - [ ] `scripts/rollback.ps1` reviewed
 - [ ] Latest `app.db.backup.*` available
 - [ ] Traffic-switch owner assigned
+
+
+## Evidence Notes
+- Attach command outputs and artifacts under `logs/cutover/*.log` for every checklist line executed.
+- Record incident status (P1/P2) for first 24h in `docs/migration-traceability-log.md` E5 entry updates.
