@@ -1,0 +1,7 @@
+/* Legacy Flask admin CSS bridge for Svelte app (WBS-1). */
+@import '../../static/admin/css/plugins/style.css';
+@import '../../static/admin/css/plugins/phosphor-icons.css';
+@import '../../static/admin/css/plugins/tabler-icons.min.css';
+@import '../../static/admin/css/style.css';
+@import '../../static/admin/css/style-preset.css';
+@import '../../static/admin/css/custom.css';
