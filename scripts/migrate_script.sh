@@ -76,7 +76,8 @@ if [[ -z "$EMAIL" ]]; then
 fi
 
 echo "[1/2] Applying migrations to ${DB_URL}"
-migrate -path migrations -database "$DB_URL" up
+MIGRATIONS_PATH="$ROOT_DIR/migrations"
+migrate -path "$MIGRATIONS_PATH" -database "$DB_URL" up
 
 echo "[2/2] Ensuring default admin user '${USERNAME}' exists"
 go run ./cmd/bootstrap-admin \

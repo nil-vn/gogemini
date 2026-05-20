@@ -39,7 +39,8 @@ if ([string]::IsNullOrWhiteSpace($Email)) {
 }
 
 Write-Host "[1/2] Applying migrations to $DbUrl"
-migrate -path migrations -database $DbUrl up
+$migrationsPath = Join-Path (Get-Location) "migrations"
+migrate -path $migrationsPath -database $DbUrl up
 
 Write-Host "[2/2] Ensuring default admin user '$Username' exists"
 go run ./cmd/bootstrap-admin --db-driver=$DbDriver --db-dsn=$DbDsn --username=$Username --password=$Password --role=$Role --status=$Status --email=$Email
