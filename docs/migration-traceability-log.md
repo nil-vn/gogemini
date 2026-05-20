@@ -238,3 +238,26 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Endpoint riêng cho liveness/readiness chưa tách; hiện mới có `/healthz` kết hợp app+DB theo scope B4.
 - Next Action:
   - Sang C1 theo dependency chain sau khi chốt B4.
+
+## 2026-05-20 | C1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Mở rộng domain entities trong Go để map đầy đủ các bảng/cột từ schema freeze A3.
+  - Bổ sung các struct quan hệ/pivot (`transaction_item`, `transaction_car`, `car_image`, `customer_image`) để sẵn sàng cho CRUD/dashboard phase 2.
+  - Giữ kiểu thời gian dạng string theo data mapping rules đã khóa ở A3.
+- Files changed:
+  - internal/domain/models.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+- DoD Mapping:
+  - [x] Entity đầy đủ trường cần cho CRUD + dashboard.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Hoàn thiện đầy đủ create/read/update/delete cho users/cars/customers/transactions (C1 cung cấp model foundation để triển khai C2).
+  - Phase 2 / Dashboard metrics đúng định nghĩa nghiệp vụ (C1 bổ sung đủ trường transaction/car/customer phục vụ aggregation ở C4).
+- Risks/Blockers:
+  - Repo query hiện tại mới scan subset fields; cần C2/C4 cập nhật query mapping để tận dụng đầy đủ domain fields.
+- Next Action:
+  - Chuyển C2 để triển khai repository CRUD đầy đủ trên các entity vừa chuẩn hóa.
