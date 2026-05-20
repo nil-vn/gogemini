@@ -17,10 +17,10 @@
     </select>
   </label>
   <label>{t('language')}
-    <select bind:value={settings.language} on:change={() => onLanguageChange(settings.language)}>
+    <select bind:value={settings.language} onchange={() => onLanguageChange(settings.language)}>
       <option value="vi">vi</option>
       <option value="en">en</option>
     </select>
   </label>
-  <button on:click={() => onSave(settings)}>{t('save')}</button>
+  <button onclick={() => onSave(settings)}>{t('save')}</button>
 </section>

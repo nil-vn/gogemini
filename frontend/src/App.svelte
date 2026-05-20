@@ -205,15 +205,15 @@
     <LoginForm onSubmit={login} t={tt} />
   {:else if route.kind === 'dashboard' || route.kind === 'admin' || route.kind === 'settings'}
     <nav aria-label={tt('a11yNavLabel')}>
-      <button on:click={() => go('/admin/dashboard')} disabled={route.kind === 'dashboard'}>{tt('navDashboard')}</button>
-      {#each modules as m}<button on:click={() => go(`/admin/${m}`)} disabled={route.kind === 'admin' && route.module === m}>{m}</button>{/each}
-      <button on:click={() => go('/admin/system')} disabled={route.kind === 'settings'}>{tt('navSettings')}</button>
-      <button on:click={logout}>{tt('navLogout')}</button>
+      <button onclick={() => go('/admin/dashboard')} disabled={route.kind === 'dashboard'}>{tt('navDashboard')}</button>
+      {#each modules as m}<button onclick={() => go(`/admin/${m}`)} disabled={route.kind === 'admin' && route.module === m}>{m}</button>{/each}
+      <button onclick={() => go('/admin/system')} disabled={route.kind === 'settings'}>{tt('navSettings')}</button>
+      <button onclick={logout}>{tt('navLogout')}</button>
     </nav>
 
     <section>
       <label for="global-search">{tt('searchLabel')}</label> <input id="global-search" bind:value={globalSearchTerm} placeholder={tt('searchPlaceholder')} />
-      <button on:click={runGlobalSearch}>{tt('searchLabel')}</button>
+      <button onclick={runGlobalSearch}>{tt('searchLabel')}</button>
       {#if globalSearchTerm.trim().length > 0}
         <h4>{tt('searchResults')}</h4>
         <pre>{JSON.stringify(searchResults, null, 2)}</pre>
@@ -231,9 +231,9 @@
         <label>{tt('sortById')}
           <select bind:value={sort}><option value="asc">asc</option><option value="desc">desc</option></select>
         </label>
-        <button on:click={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button>
-        <button on:click={clearEditor}>{tt('reset')}</button>
-        <textarea rows="8" bind:value={draftText} on:change={() => {
+        <button onclick={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button>
+        <button onclick={clearEditor}>{tt('reset')}</button>
+        <textarea rows="8" bind:value={draftText} onchange={() => {
           try {
             draft = JSON.parse(draftText);
           } catch (parseError) {
@@ -247,9 +247,9 @@
       {@const view = visibleItems(activeModule)}
       <ModuleTable title={activeModule} items={view.items} total={view.total} page={page} pageSize={pageSize} onDetail={(id) => selectRecord(activeModule, id)} onDelete={(id) => removeRecord(activeModule, id)} t={tt} />
       <section>
-        <button disabled={page<=1} on:click={() => page = page - 1}>{tt('prev')}</button>
+        <button disabled={page<=1} onclick={() => page = page - 1}>{tt('prev')}</button>
         <span>{tt('page')} {page}</span>
-        <button disabled={page*pageSize>=view.total} on:click={() => page = page + 1}>{tt('next')}</button>
+        <button disabled={page*pageSize>=view.total} onclick={() => page = page + 1}>{tt('next')}</button>
       </section>
     {/if}
   {:else}
@@ -258,7 +258,7 @@
   <section aria-live="polite" aria-label={tt('a11yStatusLabel')}>
     {#if isLoading}<p>{tt('loading')}</p>{/if}
     {#if message}<p style="color:green">{message}</p>{/if}
-    {#if error}<p style="color:red">{tt('errorTitle')}: {error} <button on:click={retryLastAction}>{tt('retry')}</button></p>{/if}
+    {#if error}<p style="color:red">{tt('errorTitle')}: {error} <button onclick={retryLastAction}>{tt('retry')}</button></p>{/if}
   </section>
 </main>
 

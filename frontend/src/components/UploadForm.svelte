@@ -29,8 +29,8 @@
   <h3>{t('uploadImage')}</h3>
   <label>Module <select bind:value={module}><option value="cars">cars</option><option value="customers">customers</option></select></label>
   <label for="upload-file">Image</label>
-  <input id="upload-file" bind:this={fileInput} type="file" accept="image/*" on:change={changeFile} required />
-  <button on:click={submit}>{t('upload')}</button>
+  <input id="upload-file" bind:this={fileInput} type="file" accept="image/*" onchange={changeFile} required />
+  <button onclick={submit}>{t('upload')}</button>
   {#if localError}<p style="color:red">{localError}</p>{/if}
   {#if preview}<img alt="preview" src={preview} style="max-width: 240px;display:block;" />{/if}
 </section>
