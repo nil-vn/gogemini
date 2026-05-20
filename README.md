@@ -59,6 +59,29 @@ UPLOAD_DIR=static/uploads
 
 ---
 
+## 3.1) Database migration (bắt buộc trước khi chạy backend)
+
+Backend Go **không tự tạo bảng** khi boot. Kết nối SQLite thành công chỉ tạo file DB vật lý; schema chỉ có sau khi chạy migrations.
+
+### Linux/macOS
+
+```bash
+# Cài golang-migrate CLI (tham khảo: https://github.com/golang-migrate/migrate)
+export DB_URL="sqlite3://app.db"
+migrate -path migrations -database "$DB_URL" up
+```
+
+### Windows (PowerShell)
+
+```powershell
+$env:DB_URL="sqlite3://app.db"
+./scripts/migrate.ps1
+```
+
+> Ghi chú: `GET /readyz` chỉ kiểm tra DB có thể ping được, **không** kiểm tra schema đã có đủ bảng.
+
+---
+
 ## 4) DEV mode (backend & frontend tách biệt)
 
 ## 4.1 Linux
@@ -71,7 +94,14 @@ npm install
 cd ..
 ```
 
-### Bước 2: Chạy backend server (Terminal 1)
+### Bước 2: Apply DB migrations (Terminal 1)
+
+```bash
+export DB_URL="sqlite3://app.db"
+migrate -path migrations -database "$DB_URL" up
+```
+
+### Bước 3: Chạy backend server (Terminal 1)
 
 ```bash
 export SERVER_ADDR=":8080"
@@ -82,14 +112,14 @@ export UPLOAD_DIR="static/uploads"
 go run ./cmd/server
 ```
 
-### Bước 3: Chạy frontend dev server (Terminal 2)
+### Bước 4: Chạy frontend dev server (Terminal 2)
 
 ```bash
 cd frontend
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-### Bước 4: Verify
+### Bước 5: Verify
 
 ```bash
 curl http://localhost:8080/healthz
@@ -110,7 +140,14 @@ npm install
 cd ..
 ```
 
-### Bước 2: Chạy backend server (PowerShell 1)
+### Bước 2: Apply DB migrations (PowerShell 1)
+
+```powershell
+$env:DB_URL="sqlite3://app.db"
+./scripts/migrate.ps1
+```
+
+### Bước 3: Chạy backend server (PowerShell 1)
 
 ```powershell
 $env:SERVER_ADDR=":8080"
@@ -127,7 +164,7 @@ go run ./cmd/server
 > ./scripts/dev.ps1
 > ```
 
-### Bước 3: Chạy frontend dev server (PowerShell 2)
+### Bước 4: Chạy frontend dev server (PowerShell 2)
 
 ```powershell
 cd frontend
@@ -140,7 +177,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 > ./scripts/frontend-dev.ps1
 > ```
 
-### Bước 4: Verify
+### Bước 5: Verify
 
 ```powershell
 curl http://localhost:8080/healthz
@@ -175,7 +212,14 @@ Kết quả mong đợi:
 - `bin/server`
 - `frontend/dist/*`
 
-## 5.2 Launch
+## 5.2 Apply migrations
+
+```bash
+export DB_URL="sqlite3://app.db"
+migrate -path migrations -database "$DB_URL" up
+```
+
+## 5.3 Launch
 
 ```bash
 export SERVER_ADDR=":8080"
@@ -186,7 +230,7 @@ export UPLOAD_DIR="static/uploads"
 ./bin/server
 ```
 
-## 5.3 Smoke check
+## 5.4 Smoke check
 
 ```bash
 curl http://localhost:8080/healthz
@@ -210,7 +254,14 @@ Kết quả mong đợi:
 - `bin/server.exe`
 - `frontend/dist/*`
 
-## 6.2 Launch
+## 6.2 Apply migrations
+
+```powershell
+$env:DB_URL="sqlite3://app.db"
+./scripts/migrate.ps1
+```
+
+## 6.3 Launch
 
 Dùng script run:
 
@@ -229,7 +280,7 @@ $env:UPLOAD_DIR="static/uploads"
 ./bin/server.exe
 ```
 
-## 6.3 Smoke check
+## 6.4 Smoke check
 
 ```powershell
 curl http://localhost:8080/healthz
