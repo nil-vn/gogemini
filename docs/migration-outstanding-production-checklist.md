@@ -7,7 +7,7 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 - [x] Feature parity matrix theo từng module (Auth, Users, Cars, Customers, Transactions, Dashboard, Search, System, Upload). _(Done in A1: `docs/migration-parity-v1-matrix.md`)_
 - [x] API baseline spec (OpenAPI/Swagger hoặc tài liệu tương đương) cho backend Go. _(Done in A2: `docs/migration-a2-api-contract-baseline.md`)_
 - [x] ERD + schema snapshot + data mapping rules từ legacy sang hệ mới. _(Done in A3: `docs/migration-a3-schema-freeze.md`)_
-- [ ] Legacy smoke baseline report để làm mốc đối chiếu kết quả parity.
+- [x] Legacy smoke baseline report để làm mốc đối chiếu kết quả parity. _(Done in A4: `docs/migration-a4-legacy-smoke-baseline.md`)_
 
 ## 2) Phase 1 - Backend Foundation hardening còn thiếu
 
