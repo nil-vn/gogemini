@@ -28,8 +28,8 @@
             <td>{getId(item)}</td>
             <td><pre>{JSON.stringify(item, null, 2)}</pre></td>
             <td>
-              <button on:click={() => onDetail(getId(item))}>{t('detail')}</button>
-              <button on:click={() => onDelete(getId(item))}>{t('delete')}</button>
+              <button onclick={() => onDetail(getId(item))}>{t('detail')}</button>
+              <button onclick={() => onDelete(getId(item))}>{t('delete')}</button>
             </td>
           </tr>
         {/each}
