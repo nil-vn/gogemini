@@ -19,7 +19,7 @@ func NewRouter(cfg config.Config, db *sql.DB) *gin.Engine {
 	r.Use(middleware.RequestLogger())
 	r.Use(middleware.CORS(cfg.CORSOrigin))
 
-	registerAdminRoutes(r, db)
+	registerAdminRoutes(r, db, cfg)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)

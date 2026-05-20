@@ -335,3 +335,34 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Revenue 6-month đang dựa vào cột `created_at`; nếu DB legacy thiếu dữ liệu timestamp lịch sử thì chuỗi tháng có thể về 0 cho các tháng tương ứng.
 - Next Action:
   - Chuyển C5 theo dependency chain sau khi đóng C4.
+
+## 2026-05-20 | C5 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện luồng auth migration gồm login/logout và middleware bảo vệ route admin bằng session token có chữ ký + expiry.
+  - Cứng hóa cookie session theo chính sách HttpOnly + SameSite=Lax và bật Secure ngoài môi trường development.
+  - Thêm cơ chế rate limit + lockout policy cho login thất bại liên tiếp để giảm brute-force risk.
+- Files changed:
+  - internal/http/admin.go
+  - internal/http/router.go
+  - internal/service/auth.go
+  - internal/http/admin_crud_test.go
+  - internal/http/auth_test.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+- DoD Mapping:
+  - [x] Verify password hash tương thích dữ liệu Flask.
+  - [x] Login/logout + session/JWT cookie + middleware bảo vệ admin.
+  - [x] User cũ đăng nhập được, route admin bị chặn khi chưa auth.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Auth-session / Thêm logout endpoint đúng chuẩn.
+  - Phase 2 / Auth-session / Cứng hóa cookie-session (HttpOnly/Secure/SameSite, expiry).
+  - Phase 2 / Auth-session / Thêm rate limit + lockout policy cho login.
+  - Phase 2 / Test coverage / Integration tests cho auth.
+- Risks/Blockers:
+  - Lockout hiện tại lưu in-memory theo instance; cần chuyển sang store phân tán nếu triển khai multi-instance production (ngoài scope C5).
+- Next Action:
+  - Chuyển C6 để triển khai System settings API theo dependency chain.
