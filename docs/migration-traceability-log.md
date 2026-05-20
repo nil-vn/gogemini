@@ -311,3 +311,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Chưa có contract/parity suite Flask-vs-Go tự động cho search (nằm ngoài scope C3, thuộc E2).
 - Next Action:
   - Chuyển C4 để triển khai dashboard metrics API theo dependency chain.
+
+## 2026-05-20 | C4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Nâng cấp `/api/admin/dashboard` từ count thô sang metrics theo parity legacy: count modules + tổng doanh thu theo trạng thái nghiệp vụ (`PAID`, `DEPOSITED`).
+  - Bổ sung chuỗi doanh thu 6 tháng gần nhất theo tháng để bám định nghĩa dashboard cũ.
+  - Bổ sung integration test cho dashboard endpoint với snapshot seed data để khóa behavior C4.
+- Files changed:
+  - internal/repo/admin_repo.go
+  - internal/http/admin_crud_test.go
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./internal/http ./internal/repo` => PASS
+- DoD Mapping:
+  - [x] API trả đúng số liệu trên snapshot dataset.
+- Related Outstanding Checklist Items:
+  - Phase 2 / Dashboard metrics đúng định nghĩa nghiệp vụ (không chỉ count thô nếu chưa đủ).
+  - Phase 2 / Integration tests cho auth/CRUD/search/system/upload (đã bổ sung phần dashboard).
+- Risks/Blockers:
+  - Revenue 6-month đang dựa vào cột `created_at`; nếu DB legacy thiếu dữ liệu timestamp lịch sử thì chuỗi tháng có thể về 0 cho các tháng tương ứng.
+- Next Action:
+  - Chuyển C5 theo dependency chain sau khi đóng C4.

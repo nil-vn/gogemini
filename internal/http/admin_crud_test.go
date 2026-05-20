@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"gogemini/internal/config"
 )
@@ -21,7 +22,7 @@ func setupAdminTestDB(t *testing.T) *sql.DB {
 		`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, role TEXT, email TEXT, password_hash TEXT, status TEXT);`,
 		`CREATE TABLE car (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, branch TEXT, model TEXT, vin TEXT, status TEXT, car_situation TEXT, selling_price INTEGER);`,
 		`CREATE TABLE customer (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, address TEXT, status TEXT);`,
-		"CREATE TABLE `transaction` (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER, status TEXT, selling_price INTEGER, purchase_date TEXT, note TEXT);",
+		"CREATE TABLE `transaction` (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER, status TEXT, selling_price INTEGER, purchase_date TEXT, note TEXT, created_at DATETIME);",
 		`CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT);`,
 		`INSERT INTO users (username, role, email, password_hash, status) VALUES ('admin','admin','a@a.com','pbkdf2:sha256:260000$salt$hash','active');`,
 	}
@@ -133,6 +134,49 @@ func TestAdminSearchParity(t *testing.T) {
 		if len(searchResp[module]) == 0 {
 			t.Fatalf("expected non-empty search result for module=%s", module)
 		}
+	}
+}
+
+func TestAdminDashboardMetricsParity(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	r := NewRouter(config.Config{CORSOrigin: "*"}, db)
+
+	now := time.Now().UTC()
+	currentMonth := time.Date(now.Year(), now.Month(), 15, 10, 0, 0, 0, time.UTC).Format(time.RFC3339)
+	prevMonth := time.Date(now.Year(), now.Month(), 15, 10, 0, 0, 0, time.UTC).AddDate(0, -1, 0).Format(time.RFC3339)
+
+	seed := []string{
+		`INSERT INTO car (name, branch, model, vin, status, car_situation, selling_price) VALUES ('C4 Car','Toyota','Cross','VIN-C4','available','new',100);`,
+		`INSERT INTO customer (name, phone, address, status) VALUES ('C4 Customer','111','HN','active');`,
+		fmt.Sprintf("INSERT INTO `transaction` (customer_id, status, selling_price, purchase_date, note, created_at) VALUES (1,'PAID',1200,'2026-01-01','seed paid','%s');", currentMonth),
+		fmt.Sprintf("INSERT INTO `transaction` (customer_id, status, selling_price, purchase_date, note, created_at) VALUES (1,'DEPOSITED',800,'2026-01-02','seed deposited','%s');", prevMonth),
+		fmt.Sprintf("INSERT INTO `transaction` (customer_id, status, selling_price, purchase_date, note, created_at) VALUES (1,'CANCELLED',5000,'2026-01-03','excluded','%s');", currentMonth),
+	}
+	for _, s := range seed {
+		if _, err := db.Exec(s); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/dashboard", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("dashboard code=%d body=%s", w.Code, w.Body.String())
+	}
+
+	var resp map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if int(resp["users"].(float64)) != 1 || int(resp["cars"].(float64)) != 1 || int(resp["customers"].(float64)) != 1 || int(resp["transactions"].(float64)) != 3 {
+		t.Fatalf("unexpected count metrics: %+v", resp)
+	}
+	if int(resp["total_revenue"].(float64)) != 2000 {
+		t.Fatalf("expected total_revenue=2000, got=%v", resp["total_revenue"])
+	}
+	if _, ok := resp["revenue_"+time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).Format("01/2006")]; !ok {
+		t.Fatalf("missing current month revenue key: %+v", resp)
 	}
 }
 
