@@ -106,3 +106,27 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Kiểu dữ liệu ngày giờ hiện dùng string ở legacy, có rủi ro parse/validate ở Phase 2 nếu không chuẩn hóa format input.
 - Next Action:
   - Chuyển sang A4 để tạo legacy smoke baseline report đối chiếu parity.
+
+## 2026-05-20 | A4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Tạo legacy smoke test baseline cho các flow trọng yếu: login, CRUD module chính, search, upload.
+  - Ghi baseline report để làm mốc đối chiếu parity các phase sau.
+  - Đánh dấu outstanding checklist item Phase 0 liên quan legacy smoke baseline đã hoàn tất.
+- Files changed:
+  - tests/smoke/test_legacy_smoke.py
+  - docs/migration-a4-legacy-smoke-baseline.md
+  - docs/migration-outstanding-production-checklist.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `PYTHONPATH=. pytest -q tests/smoke/test_legacy_smoke.py` => PASS
+- DoD Mapping:
+  - [x] Smoke tests chạy pass ổn định trên branch baseline.
+- Related Outstanding Checklist Items:
+  - Phase 0 / Legacy smoke baseline report để làm mốc đối chiếu kết quả parity.
+- Risks/Blockers:
+  - Còn warnings deprecated từ stack legacy (không chặn A4, sẽ xử lý ở phase hardening).
+- Next Action:
+  - Dùng baseline này làm mốc cho E2 API parity và E1/E2E critical flows.
