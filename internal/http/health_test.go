@@ -27,7 +27,7 @@ func TestHealthzReturnsOKWhenDBIsUp(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 
-	var body map[string]string
+	var body map[string]any
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 		t.Fatalf("parse response: %v", err)
 	}
@@ -53,11 +53,12 @@ func TestHealthzReturns503WhenDBIsDown(t *testing.T) {
 		t.Fatalf("expected 503, got %d", w.Code)
 	}
 
-	var body map[string]string
+	var body map[string]any
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 		t.Fatalf("parse response: %v", err)
 	}
-	if body["error"] == nil {
+	errObj, ok := body["error"].(map[string]any)
+	if !ok || errObj["code"] == "" {
 		t.Fatalf("expected error envelope: %+v", body)
 	}
 }

@@ -751,3 +751,36 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Rate limit currently process-local memory; distributed deployments should use shared store.
 - Next Action:
   - Continue WBS-2 API functional closure.
+
+## 2026-05-20 | WBS-2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Closed WBS-2 API functional closure items for CRUD/list semantics/query validation/search parity/dashboard metrics/system settings auth matrix.
+  - Added strict list query validation + normalized semantics (`page`, `page_size`, `sort`, `order`) and optional `status` filter parity.
+  - Added integration tests for query validation and system settings authorization matrix; published WBS-2 closure report.
+- Files changed:
+  - internal/http/admin.go
+  - internal/repo/admin_repo.go
+  - internal/http/admin_crud_test.go
+  - internal/http/health_test.go
+  - docs/migration-outstanding-production-checklist.md
+  - docs/wbs2-api-functional-closure-report.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+- DoD Mapping:
+  - [x] 2.1 CRUD sâu users/cars/customers/transactions + edge validation paths.
+  - [x] 2.2 List contract đồng nhất `items,total,page,page_size,sort,order`.
+  - [x] 2.3 Filter/sort/pagination semantics + query/body validation.
+  - [x] 2.4 Search parity theo expected behavior documented.
+  - [x] 2.5 Dashboard metrics align business definition (`total_revenue` + month buckets).
+  - [x] 2.6 System settings validation + authorization matrix (read auth, write admin-only).
+  - [x] 2.7 Unit/integration suites executed with pass evidence.
+- Related Outstanding Checklist Items:
+  - Phase 2 API parity gaps (CRUD/list/query/search/dashboard/system/test-depth) marked complete in scope.
+- Risks/Blockers:
+  - Validation/error envelope still mixed in some non-WBS-2 endpoints; global envelope unification tracked outside this scope.
+- Next Action:
+  - Proceed with next WBS per audit priority after review sign-off.

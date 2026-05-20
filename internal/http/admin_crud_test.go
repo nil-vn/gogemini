@@ -241,6 +241,54 @@ func TestAdminSystemSettingsValidationAndAuthorization(t *testing.T) {
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected unauthorized without session, got code=%d body=%s", w.Code, w.Body.String())
 	}
+
+	if _, err := db.Exec(`UPDATE users SET role='viewer' WHERE id=1`); err != nil {
+		t.Fatal(err)
+	}
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodPut, "/api/admin/system", []byte(`{"currency":"USD"}`)))
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("expected forbidden for non-admin settings update, got code=%d body=%s", w.Code, w.Body.String())
+	}
+
+	if _, err := db.Exec(`UPDATE users SET role='admin' WHERE id=1`); err != nil {
+		t.Fatal(err)
+	}
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodPut, "/api/admin/system", []byte(`{"currency":"USD"}`)))
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("expected no-content for admin settings update, got code=%d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestListValidationSemantics(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
+	if _, err := db.Exec(`INSERT INTO users (username, role, email, password_hash, status) VALUES ('john','admin','j@a.com','x','active');`); err != nil {
+		t.Fatal(err)
+	}
+
+	badQueries := []string{
+		"/api/admin/users?page=0",
+		"/api/admin/users?page_size=0",
+		"/api/admin/users?page_size=101",
+		"/api/admin/users?sort=bad",
+		"/api/admin/users?order=up",
+	}
+	for _, q := range badQueries {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, authedReq(http.MethodGet, q, nil))
+		if w.Code != http.StatusBadRequest {
+			t.Fatalf("expected bad request for %s, got=%d body=%s", q, w.Code, w.Body.String())
+		}
+	}
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/users?status=active&sort=username&order=asc&page=1&page_size=10", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 for filtered list, got=%d body=%s", w.Code, w.Body.String())
+	}
 }
 
 func TestAdminUploadAPI(t *testing.T) {

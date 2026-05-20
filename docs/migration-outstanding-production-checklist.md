@@ -25,20 +25,20 @@ Tài liệu này tổng hợp toàn bộ các hạng mục còn nợ (chưa hoà
 - [ ] Thêm rate limit + lockout policy cho login.
 
 ### CRUD & list behavior
-- [ ] Hoàn thiện đầy đủ create/read/update/delete cho users/cars/customers/transactions.
-- [ ] Chuẩn hóa filter/sort/pagination cho toàn bộ list APIs.
-- [ ] Chuẩn response list (`items`, `total`, `page`, `page_size`, `sort`, `order`).
-- [ ] Validation input + error handling nhất quán cho query/body params.
+- [x] Hoàn thiện đầy đủ create/read/update/delete cho users/cars/customers/transactions. _(Done in WBS-2: `internal/http/admin.go`, `internal/repo/admin_repo.go`, `internal/http/admin_crud_test.go`)_
+- [x] Chuẩn hóa filter/sort/pagination cho toàn bộ list APIs. _(Done in WBS-2: strict query semantics + status filter in `internal/http/admin.go`, `internal/repo/admin_repo.go`)_
+- [x] Chuẩn response list (`items`, `total`, `page`, `page_size`, `sort`, `order`). _(Validated in `internal/http/admin_api_parity_test.go`)_
+- [x] Validation input + error handling nhất quán cho query/body params. _(Done in WBS-2 scope for list/system settings in `internal/http/admin.go`, tests in `internal/http/admin_crud_test.go`)_
 
 ### Search, dashboard, system, upload
-- [ ] Chuẩn hóa search behavior tương đương legacy.
-- [ ] Dashboard metrics đúng định nghĩa nghiệp vụ (không chỉ count thô nếu chưa đủ).
-- [ ] System settings có validation key/value + authorization đầy đủ.
+- [x] Chuẩn hóa search behavior tương đương legacy. _(Locked by `internal/http/admin_crud_test.go`, `internal/http/admin_api_parity_test.go`)_
+- [x] Dashboard metrics đúng định nghĩa nghiệp vụ (không chỉ count thô nếu chưa đủ). _(Done in `internal/repo/admin_repo.go`, validated in `internal/http/admin_crud_test.go`)_
+- [x] System settings có validation key/value + authorization đầy đủ. _(Done in WBS-2: `internal/http/admin.go`, `internal/http/admin_crud_test.go`)_
 - [x] Upload hardening: MIME/ext whitelist, size limits, filename sanitization, chống path traversal, storage strategy production. _(Done in C7: `internal/http/admin.go`, `internal/http/admin_crud_test.go`)_
 
 ### Test coverage cho API
-- [ ] Unit tests cho service/repo logic quan trọng.
-- [ ] Integration tests cho auth/CRUD/search/system/upload.
+- [x] Unit tests cho service/repo logic quan trọng. _(Service/auth and middleware suites present + green in `go test ./...`)_
+- [x] Integration tests cho auth/CRUD/search/system/upload. _(Covered by `internal/http/auth_test.go`, `internal/http/admin_crud_test.go`)_
 - [x] Contract/parity tests để khóa hành vi API. _(Done in E2: `internal/http/admin_api_parity_test.go`, `docs/migration-e2-api-parity-checklist.md`)_
 
 ## 4) Phase 3 - Frontend parity còn thiếu
