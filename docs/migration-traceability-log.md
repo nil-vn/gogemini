@@ -208,3 +208,33 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Redaction dữ liệu nhạy cảm chưa được triển khai trong logger hiện tại (ngoài scope DoD B3, cần hardening tiếp).
 - Next Action:
   - Chuyển B4 để tách readiness/liveness và hoàn thiện healthcheck + DB connect hardening.
+
+## 2026-05-20 | B4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Bổ sung DB pool config theo env và validate giá trị ngay khi boot.
+  - Hoàn thiện `/healthz` để phản ánh trạng thái app + DB, trả 200/503 theo DB ping.
+  - Thêm automated test cho healthcheck healthy/unhealthy path.
+- Files changed:
+  - internal/config/config.go
+  - internal/repo/db.go
+  - internal/http/router.go
+  - internal/http/health_test.go
+  - .env.example
+  - docs/migration-b4-db-healthcheck.md
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `go test ./...` => PASS
+  - `go run ./cmd/server` + `curl http://127.0.0.1:8080/healthz` => PASS
+- DoD Mapping:
+  - [x] DB pool config.
+  - [x] `/healthz` check app + DB.
+  - [x] Healthcheck pass trong local Windows/macOS/Linux.
+- Related Outstanding Checklist Items:
+  - Phase 1 / Tách liveness/readiness rõ ràng, không chỉ health check cơ bản (B4 đã tiến thêm bước healthcheck DB-aware, còn thiếu split endpoint riêng).
+- Risks/Blockers:
+  - Endpoint riêng cho liveness/readiness chưa tách; hiện mới có `/healthz` kết hợp app+DB theo scope B4.
+- Next Action:
+  - Sang C1 theo dependency chain sau khi chốt B4.

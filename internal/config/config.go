@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -12,6 +13,9 @@ type Config struct {
 	ServerAddr  string
 	DBDriver    string
 	DBDSN       string
+	DBMaxOpen   int
+	DBMaxIdle   int
+	DBMaxLifeMs int
 	CORSOrigin  string
 	AuthSecret  string
 	UploadDir   string
@@ -27,6 +31,9 @@ func MustLoad() Config {
 		ServerAddr:  getEnv("SERVER_ADDR", ":8080"),
 		DBDriver:    getEnv("DB_DRIVER", "sqlite"),
 		DBDSN:       getEnv("DB_DSN", "file:app.db?cache=shared"),
+		DBMaxOpen:   getEnvInt("DB_MAX_OPEN_CONNS", 10),
+		DBMaxIdle:   getEnvInt("DB_MAX_IDLE_CONNS", 5),
+		DBMaxLifeMs: getEnvInt("DB_CONN_MAX_LIFETIME_MS", 300000),
 		CORSOrigin:  getEnv("CORS_ORIGIN", "*"),
 		AuthSecret:  getEnv("AUTH_SECRET", "dev-change-me"),
 		UploadDir:   getEnv("UPLOAD_DIR", filepath.FromSlash("static/uploads")),
@@ -37,8 +44,27 @@ func MustLoad() Config {
 	mustNotBlank("DB_DSN", cfg.DBDSN)
 	mustNotBlank("AUTH_SECRET", cfg.AuthSecret)
 	mustNotBlank("UPLOAD_DIR", cfg.UploadDir)
+	mustPositive("DB_MAX_OPEN_CONNS", cfg.DBMaxOpen)
+	mustPositive("DB_MAX_IDLE_CONNS", cfg.DBMaxIdle)
+	mustNonNegative("DB_CONN_MAX_LIFETIME_MS", cfg.DBMaxLifeMs)
+
+	if cfg.DBMaxIdle > cfg.DBMaxOpen {
+		panic("DB_MAX_IDLE_CONNS must be <= DB_MAX_OPEN_CONNS")
+	}
 
 	return cfg
+}
+
+func mustPositive(name string, value int) {
+	if value <= 0 {
+		panic(fmt.Sprintf("%s must be > 0", name))
+	}
+}
+
+func mustNonNegative(name string, value int) {
+	if value < 0 {
+		panic(fmt.Sprintf("%s must be >= 0", name))
+	}
 }
 
 func mustNotBlank(name, value string) {
@@ -52,6 +78,18 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func getEnvInt(key string, fallback int) int {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return fallback
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil {
+		panic(fmt.Sprintf("%s must be an integer", key))
+	}
+	return value
 }
 
 func loadDotEnv(path string) error {

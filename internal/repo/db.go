@@ -3,6 +3,7 @@ package repo
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	"gogemini/internal/config"
 
@@ -18,6 +19,10 @@ func MustOpen(cfg config.Config) *sql.DB {
 	if err := db.Ping(); err != nil {
 		log.Fatalf("ping db: %v", err)
 	}
+
+	db.SetMaxOpenConns(cfg.DBMaxOpen)
+	db.SetMaxIdleConns(cfg.DBMaxIdle)
+	db.SetConnMaxLifetime(time.Duration(cfg.DBMaxLifeMs) * time.Millisecond)
 
 	return db
 }
