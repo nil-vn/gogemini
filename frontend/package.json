@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts,.svelte",
+    "format": "prettier --check .",
+    "format:write": "prettier --write ."
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
@@ -16,6 +19,14 @@
     "svelte-check": "^4.0.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
-    "@playwright/test": "^1.54.0"
+    "@playwright/test": "^1.54.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.13.0",
+    "prettier": "^3.6.2",
+    "svelte-eslint-parser": "^1.4.0",
+    "@eslint/js": "^9.39.1",
+    "globals": "^16.4.0",
+    "typescript-eslint": "^8.46.3"
   }
 }

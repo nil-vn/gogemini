@@ -416,3 +416,30 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Storage strategy hiện tại là local filesystem (parity v1); production object storage lifecycle/CDN chưa nằm trong scope C7.
 - Next Action:
   - Chuyển E2 để khóa parity contract test Flask vs Go cho upload + module API trọng yếu.
+
+## 2026-05-20 | D1 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Hoàn thiện scaffold FE Svelte 5/Vite/TypeScript cho phase 3 với typing `import.meta.env` chuẩn Vite.
+  - Bổ sung toolchain lint/format (ESLint flat config + Prettier) và scripts npm tương ứng.
+  - Kiểm chứng build/check/lint/format pass cho frontend.
+- Files changed:
+  - frontend/package.json
+  - frontend/package-lock.json
+  - frontend/eslint.config.js
+  - frontend/.prettierrc.json
+  - frontend/src/vite-env.d.ts
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run build && npm run check && npm run lint && npm run format` => PASS
+- DoD Mapping:
+  - [x] Svelte 5 + Vite + TypeScript + lint/format.
+  - [x] Build dev/prod chạy ổn (đã verify prod build + static checks; dev toolchain sẵn sàng qua `npm run dev`).
+- Related Outstanding Checklist Items:
+  - Phase 3 / Bổ sung test cho frontend (D1 mới dựng toolchain nền, test flow chi tiết sẽ xử lý ở các task D2-D5/E1).
+- Risks/Blockers:
+  - Không có blocker trong phạm vi D1.
+- Next Action:
+  - Chuyển D2 để dựng app shell + routing + auth guard trên nền scaffold/toolchain đã ổn định.
