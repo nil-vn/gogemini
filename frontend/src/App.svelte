@@ -43,6 +43,8 @@
   let pendingCarImages: File[] = [];
   let customerForm: Record<string, string> = { name: '', gender: 'unknown', address: '', phone: '', birth_day: '', facebook: '', lead_source: '', status: '', note: '' };
   let pendingCustomerImages: File[] = [];
+  let transactionForm: Record<string, string> = { customer_id: '', car_id: '', purchase_date: '', selling_price: '', deposit_amount: '', status: '', note: '' };
+  let transactionItems: Array<{ name: string; price: string }> = [{ name: '', price: '' }];
   let customerSegment = 'all';
   let carSegment = 'all';
   let selectedId = '';
@@ -91,7 +93,7 @@
 
   function go(path: string) { window.location.hash = `#${path}`; }
   function syncDraftText() { draftText = JSON.stringify(draft, null, 2); }
-  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); customerForm = toCustomerForm(); pendingCarImages = []; pendingCustomerImages = []; syncDraftText(); }
+  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); customerForm = toCustomerForm(); transactionForm = toTransactionForm(); transactionItems = [{ name: '', price: '' }]; pendingCarImages = []; pendingCustomerImages = []; syncDraftText(); }
 
   async function guarded<T>(fn: () => Promise<T>) {
     try {
@@ -199,6 +201,7 @@
     if (module === 'users') userForm = toUserForm(detail);
     if (module === 'cars') carForm = toCarForm(detail);
     if (module === 'customers') customerForm = toCustomerForm(detail);
+    if (module === 'transactions') { transactionForm = toTransactionForm(detail); transactionItems = toTransactionItems(detail); }
     syncDraftText();
   }
 
@@ -334,6 +337,53 @@
   }
 
 
+  function toTransactionForm(input: Partial<ModuleRecord> = {}) {
+    return {
+      customer_id: String((input as any).customer_id ?? (input as any).customer?.id ?? ''),
+      car_id: String((input as any).car_id ?? (Array.isArray((input as any).cars) && (input as any).cars[0]?.id) ?? ''),
+      purchase_date: String(input.purchase_date ?? ''),
+      selling_price: String(input.selling_price ?? ''),
+      deposit_amount: String(input.deposit_amount ?? ''),
+      status: String(input.status ?? ''),
+      note: String(input.note ?? '')
+    };
+  }
+  function toTransactionItems(input: Partial<ModuleRecord> = {}) {
+    const raw = Array.isArray((input as any).items) ? (input as any).items : [];
+    const mapped = raw.map((it: any) => ({ name: String(it?.name ?? ''), price: String(it?.price ?? '') }));
+    return mapped.length ? mapped : [{ name: '', price: '' }];
+  }
+  function addTransactionItem() { transactionItems = [...transactionItems, { name: '', price: '' }]; }
+  function removeTransactionItem(index: number) { transactionItems = transactionItems.filter((_, i) => i !== index); if (!transactionItems.length) transactionItems = [{ name: '', price: '' }]; }
+  function syncTransactionDraftFromForm() {
+    const items = transactionItems.filter((it) => it.name.trim() || it.price.trim()).map((it) => ({ name: it.name.trim(), price: Number(it.price || 0) }));
+    draft = { ...draft, ...transactionForm, items };
+  }
+  function transactionSummary() {
+    const txs = records.transactions ?? [];
+    const toNum = (v: unknown) => Number(v ?? 0) || 0;
+    const totalRevenue = txs.reduce((acc, tx: any) => acc + toNum(tx.total_amount || tx.selling_price), 0);
+    const paidRevenue = txs.filter((tx: any) => String(tx.status ?? '').toLowerCase().includes('paid') || String(tx.status ?? '').includes('Đã')).reduce((acc, tx: any) => acc + toNum(tx.total_amount || tx.selling_price), 0);
+    const depositedAmount = txs.filter((tx: any) => !(String(tx.status ?? '').toLowerCase().includes('paid') || String(tx.status ?? '').includes('Đã'))).reduce((acc, tx: any) => acc + toNum(tx.deposit_amount), 0);
+    return { txs, totalRevenue, paidRevenue, depositedAmount };
+  }
+  function transactionStatusGroups() {
+    const txs = records.transactions ?? [];
+    const isPaid = (tx: any) => String(tx.status ?? '').toLowerCase().includes('paid') || String(tx.status ?? '').includes('Đã');
+    return { all: txs, deposited: txs.filter((tx:any)=>!isPaid(tx)), paid: txs.filter((tx:any)=>isPaid(tx)) };
+  }
+  function applyTransactionPrefill() {
+    const hash = window.location.hash || '';
+    const q = hash.includes('?') ? hash.split('?')[1] : '';
+    const params = new URLSearchParams(q);
+    const carId = params.get('car_id') ?? '';
+    const customerId = params.get('customer_id') ?? '';
+    if (carId || customerId) {
+      transactionForm = { ...transactionForm, car_id: carId || transactionForm.car_id, customer_id: customerId || transactionForm.customer_id };
+      draft = { ...draft, ...transactionForm };
+    }
+  }
+
   async function bootstrapAdmin(module: ModuleKey) { clearEditor(); page = 1; await loadModule(module); syncDraftText(); }
 
   async function syncRoute() {
@@ -349,6 +399,7 @@
         if (route.module === 'cars') carForm = toCarForm(draft);
         if (route.module === 'customers') customerForm = toCustomerForm(draft);
       }
+      if (route.module === 'transactions' && route.kind === 'module-new') applyTransactionPrefill();
     }
     if (route.kind === 'search') await runGlobalSearch();
     if (route.kind === 'settings') await loadSettings();
@@ -523,6 +574,34 @@
               <div class="col-md-12"><label class="form-label">Note</label><textarea rows="3" class="form-control" bind:value={customerForm.note}></textarea></div>
               <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCustomerImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCustomerImages.length}</small></div>
               <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={saveCustomerRecord}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>{#if route.kind === 'module-detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?customer_id=${selectedId || route.id}`)}>Add Purchase</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
+            </div>
+          {:else if activeModule === 'transactions'}
+            {@const txSum = transactionSummary()}
+            {@const txGroup = transactionStatusGroups()}
+            <div class="row g-3 mb-3">
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Revenue</p><h4 class="mb-0">{txSum.totalRevenue.toLocaleString()}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Paid Revenue</p><h4 class="mb-0">{txSum.paidRevenue.toLocaleString()}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Deposited Amount</p><h4 class="mb-0">{txSum.depositedAmount.toLocaleString()}</h4></div></div></div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-sm {filter==='tx_all'?'btn-primary':'btn-outline-primary'}" onclick={() => filter='tx_all'}>All ({txGroup.all.length})</button>
+              <button class="btn btn-sm {filter==='tx_deposited'?'btn-primary':'btn-outline-primary'}" onclick={() => filter='tx_deposited'}>Deposited ({txGroup.deposited.length})</button>
+              <button class="btn btn-sm {filter==='tx_paid'?'btn-primary':'btn-outline-primary'}" onclick={() => filter='tx_paid'}>Paid ({txGroup.paid.length})</button>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label">Customer ID *</label><input class="form-control" bind:value={transactionForm.customer_id} /></div>
+              <div class="col-md-6"><label class="form-label">Car ID *</label><input class="form-control" bind:value={transactionForm.car_id} /></div>
+              <div class="col-md-6"><label class="form-label">Purchase Date</label><input class="form-control" bind:value={transactionForm.purchase_date} placeholder="YYYY-MM-DD" /></div>
+              <div class="col-md-6"><label class="form-label">Selling Price</label><input class="form-control" bind:value={transactionForm.selling_price} /></div>
+              <div class="col-md-6"><label class="form-label">Deposit Amount</label><input class="form-control" bind:value={transactionForm.deposit_amount} /></div>
+              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={transactionForm.status}><option value="">Customer status</option><option value="paid">Paid</option><option value="deposited">Deposited</option><option value="wait2pay">Wait to pay</option></select></div>
+              <div class="col-md-12"><label class="form-label">Note</label><textarea rows="3" class="form-control" bind:value={transactionForm.note}></textarea></div>
+              <div class="col-md-12">
+                <h6>Other Transactions (Accessories/Services)</h6>
+                <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Accessory/Service Name</th><th>Price</th><th></th></tr></thead><tbody>{#each transactionItems as item, idx}<tr><td><input class="form-control" bind:value={item.name} /></td><td><input class="form-control" bind:value={item.price} /></td><td><button class="btn btn-sm btn-danger" onclick={() => removeTransactionItem(idx)}>Remove</button></td></tr>{/each}</tbody></table></div>
+                <button class="btn btn-sm btn-primary" onclick={addTransactionItem}>+ Add Item</button>
+              </div>
+              <div class="col-md-12 d-flex flex-wrap gap-2"><button class="btn btn-primary" onclick={async () => { if (!transactionForm.customer_id || !transactionForm.car_id) { error = 'Customer and Car are required'; return; } syncTransactionDraftFromForm(); await saveRecord('transactions'); }}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>{#if route.kind==='module-detail'}<button class="btn btn-outline-success" onclick={async () => { transactionForm.status='paid'; syncTransactionDraftFromForm(); await saveRecord('transactions'); }}>Mark as Paid</button><button class="btn btn-outline-warning" onclick={async () => { transactionForm.status='deposited'; syncTransactionDraftFromForm(); await saveRecord('transactions'); }}>Mark as Deposited</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
             </div>
           {:else}
           <div class="row g-3 mb-3">
