@@ -85,6 +85,26 @@ Quy tắc:
 - `DEFAULT_ADMIN_STATUS`: optional, mặc định `active`.
 - Nếu user đã tồn tại theo `username` hoặc `email`, app sẽ update password/role/status theo giá trị mới.
 
+
+## 3.2) Cấu hình môi trường cho frontend (Vite)
+
+Frontend sử dụng biến môi trường riêng của Vite, quan trọng nhất là `VITE_API_BASE`.
+
+- File mẫu đã có sẵn tại `frontend/.env.example`:
+
+```env
+VITE_API_BASE=http://localhost:8080
+```
+
+- Bạn cần tạo `frontend/.env` (hoặc copy từ file mẫu) để tránh nhầm host/port khi gọi API:
+
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+- Nếu backend không chạy ở `localhost:8080`, bắt buộc sửa `VITE_API_BASE` cho đúng endpoint backend thực tế.
+- Sau khi chỉnh `frontend/.env`, cần restart Vite dev server để nhận cấu hình mới.
+
 ## 4) DEV mode (backend & frontend tách biệt)
 
 ## 4.1 Linux
