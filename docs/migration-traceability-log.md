@@ -930,3 +930,32 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Môi trường CI/container không có browser binary và bị chặn tải Playwright Chromium (HTTP 403 Domain forbidden), nên chưa thể generate baseline screenshot artifacts ngay trong phiên này.
 - Next Action:
   - Chuyển sang WBS-2 để dựng layout shell parity (header/sidebar/footer/auth layout).
+
+## 2026-05-20 | WBS-2 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Map các partial layout Flask (`_base`, `_header`, `_sidebar`, `_footer`, `_auth`) sang shell component Svelte với slot/content region.
+  - Tích hợp `AdminLayout` vào `App.svelte` cho toàn bộ route admin (`dashboard`, `module`, `system`) để thay scaffold nav cũ.
+  - Bổ sung trạng thái điều hướng active-route, region chính có landmark rõ ràng và action điều hướng theo route hash.
+- Files changed:
+  - frontend/src/App.svelte
+  - frontend/src/components/layout/AdminLayout.svelte
+  - frontend/src/components/layout/AdminHeader.svelte
+  - frontend/src/components/layout/AdminSidebar.svelte
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run -s check` => PASS
+  - `cd frontend && npm run -s build` => FAIL (known pre-existing stylesheet path issue in `legacy-admin.css`)
+- DoD Mapping:
+  - [x] 2.1 Map Flask layout partials.
+  - [x] 2.2 Rebuild as Svelte layout components with slot/content regions.
+  - [x] 2.3 Port navigation states (active route) + semantic labels.
+  - [x] 2.4 Preserve container/shell responsive structure (`pc-sidebar` / `pc-header` / `pc-container` / `pc-footer`).
+- Related Outstanding Checklist Items:
+  - GUI parity shell foundation complete; page-level parity remains in WBS-3.
+- Risks/Blockers:
+  - Build blocker hiện tại do đường dẫn `@import` trong `frontend/src/styles/legacy-admin.css` trỏ sai tới `static/admin/css/plugins/style.css` (ngoài scope WBS-2 theo strict boundaries).
+- Next Action:
+  - Chuyển WBS-3 cho component/page parity; xử lý stylesheet import path ở WBS-1/asset integration track.

@@ -9,6 +9,7 @@
   import ModuleTable from './components/ModuleTable.svelte';
   import SettingsForm from './components/SettingsForm.svelte';
   import UploadForm from './components/UploadForm.svelte';
+  import AdminLayout from './components/layout/AdminLayout.svelte';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
   const moduleSet = new Set<ModuleKey>(modules);
@@ -198,27 +199,25 @@
   });
 </script>
 
-<a href="#main-content" class="skip-link">{tt('a11ySkipToContent')}</a>
-<main id="main-content" tabindex="-1">
-  <h1>{tt('appTitle')}</h1>
+<main>
+  <h1 class="d-none">{tt('appTitle')}</h1>
   {#if route.kind === 'login'}
     <LoginForm onSubmit={login} t={tt} />
   {:else if route.kind === 'dashboard' || route.kind === 'admin' || route.kind === 'settings'}
-    <nav aria-label={tt('a11yNavLabel')}>
-      <button onclick={() => go('/admin/dashboard')} disabled={route.kind === 'dashboard'}>{tt('navDashboard')}</button>
-      {#each modules as m}<button onclick={() => go(`/admin/${m}`)} disabled={route.kind === 'admin' && route.module === m}>{m}</button>{/each}
-      <button onclick={() => go('/admin/system')} disabled={route.kind === 'settings'}>{tt('navSettings')}</button>
-      <button onclick={logout}>{tt('navLogout')}</button>
-    </nav>
-
-    <section>
-      <label for="global-search">{tt('searchLabel')}</label> <input id="global-search" bind:value={globalSearchTerm} placeholder={tt('searchPlaceholder')} />
-      <button onclick={runGlobalSearch}>{tt('searchLabel')}</button>
-      {#if globalSearchTerm.trim().length > 0}
+    <AdminLayout
+      activePath={route.kind === 'dashboard' ? '/admin/dashboard' : route.kind === 'settings' ? '/admin/system' : `/admin/${route.module}`}
+      {globalSearchTerm}
+      onNavigate={go}
+      onSearch={runGlobalSearch}
+      onSearchTermInput={(value) => globalSearchTerm = value}
+      onThemeChange={(theme) => document.body.setAttribute('data-pc-theme', theme)}
+    >
+    {#if globalSearchTerm.trim().length > 0}
+      <section class="mb-3">
         <h4>{tt('searchResults')}</h4>
         <pre>{JSON.stringify(searchResults, null, 2)}</pre>
-      {/if}
-    </section>
+      </section>
+    {/if}
 
     {#if route.kind === 'dashboard'}
       <section><h3>{tt('dashboardTitle')}</h3>{#if dashboard}<pre>{JSON.stringify(dashboard, null, 2)}</pre>{/if}</section>
@@ -252,7 +251,8 @@
         <button disabled={page*pageSize>=view.total} onclick={() => page = page + 1}>{tt('next')}</button>
       </section>
     {/if}
-  {:else}
+    </AdminLayout>
+{:else}
     <p><a href="#/auth/login">{tt('login')}</a> | <a href="#/admin/dashboard">{tt('admin')}</a></p>
   {/if}
   <section aria-live="polite" aria-label={tt('a11yStatusLabel')}>
@@ -262,7 +262,4 @@
   </section>
 </main>
 
-<style>
-  .skip-link { position:absolute; left:-9999px; }
-  .skip-link:focus { left: 8px; top:8px; background:#111; color:#fff; padding:8px; z-index:1000; }
-</style>
+
