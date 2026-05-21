@@ -1,0 +1,8 @@
+<script lang="ts">
+  export let routeMode:'list'|'new'|'detail'='list'; export let customerForm:any; export let customerSegmentation:any; export let customerSegment:string; export let setCustomerSegment:(v:string)=>void;
+  export let pendingCustomerImages:File[]; export let setPendingCustomerImages:(v:File[])=>void; export let saveCustomerRecord:any; export let clearEditor:any; export let go:any; export let selectedId=''; export let currentRouteId:any; export let tt:any;
+</script>
+{@const custSeg = customerSegmentation()}
+<div class="row g-3 mb-3"><div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Customers</p><h4 class="mb-0">{custSeg.customers.length}</h4></div></div></div></div>
+<div class="d-flex flex-wrap gap-2 mb-3"><button class="btn btn-sm {customerSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => setCustomerSegment('all')}>All</button></div>
+<div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={customerForm.name} /></div><div class="col-md-12"><label class="form-label">Images</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e)=>setPendingCustomerImages(Array.from((e.currentTarget as HTMLInputElement).files??[]))} /></div><div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={saveCustomerRecord}>{routeMode==='detail'?tt('update'):tt('create')}</button>{#if routeMode==='detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?customer_id=${selectedId || currentRouteId()}`)}>Add Purchase</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div></div>

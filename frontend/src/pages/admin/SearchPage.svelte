@@ -1,0 +1,2 @@
+<script lang="ts">export let globalSearchTerm=''; export let setGlobalSearchTerm:(v:string)=>void; export let runGlobalSearch:any;</script>
+<div class="d-flex gap-2"><input class="form-control" value={globalSearchTerm} oninput={(e)=>setGlobalSearchTerm((e.currentTarget as HTMLInputElement).value)} placeholder="Search across modules..." /><button class="btn btn-primary" onclick={runGlobalSearch}>Run Search</button></div>

@@ -16,6 +16,9 @@
   import SectionCard from './components/ui/SectionCard.svelte';
   import UsersPage from './pages/admin/UsersPage.svelte';
   import TransactionsPage from './pages/admin/TransactionsPage.svelte';
+  import CarsPage from './pages/admin/CarsPage.svelte';
+  import CustomersPage from './pages/admin/CustomersPage.svelte';
+  import SearchPage from './pages/admin/SearchPage.svelte';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
   const moduleSet = new Set<ModuleKey>(modules);
@@ -498,10 +501,7 @@
     {:else if route.kind === 'search'}
       <SectionCard title="Search" subtitle="Dedicated search workflow parity at /admin/search">
         <p class="text-muted mb-2">Dedicated search page parity route: <code>/admin/search</code></p>
-        <div class="d-flex gap-2">
-          <input class="form-control" bind:value={globalSearchTerm} placeholder="Search across modules..." />
-          <button class="btn btn-primary" onclick={runGlobalSearch}>Run Search</button>
-        </div>
+        <SearchPage {globalSearchTerm} setGlobalSearchTerm={(v)=>globalSearchTerm=v} {runGlobalSearch} />
       </SectionCard>
     {:else if route.kind.endsWith('-list') || route.kind.endsWith('-new') || route.kind.endsWith('-detail')}
       <SectionCard title={tt('managementTitle', { module: activeModule })} subtitle="Shared form + table density parity" actions={true}>
@@ -519,69 +519,9 @@
           {#if activeModule === 'users'}
             <UsersPage {routeMode} {userForm} {validateUserForm} {syncUserDraftFromForm} {saveRecord} {clearEditor} {userSegmentation} tt={tt} />
           {:else if activeModule === 'cars'}
-            {@const cseg = carSegmentation()}
-            <div class="row g-3 mb-3">
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Cars</p><h4 class="mb-0">{cseg.cars.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Available (inc. Awaiting)</p><h4 class="mb-0">{cseg.available.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Sold Cars</p><h4 class="mb-0">{cseg.sold.length}</h4></div></div></div>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <button class="btn btn-sm {carSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='all'}>All ({cseg.cars.length})</button>
-              <button class="btn btn-sm {carSegment==='available'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='available'}>Available ({cseg.available.length})</button>
-              <button class="btn btn-sm {carSegment==='awaiting'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='awaiting'}>Awaiting ({cseg.awaiting.length})</button>
-              <button class="btn btn-sm {carSegment==='sold'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='sold'}>Sold ({cseg.sold.length})</button>
-              <button class="btn btn-sm {carSegment==='refurbished'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='refurbished'}>Refurbished ({cseg.refurbished.length})</button>
-              <button class="btn btn-sm {carSegment==='not_refurbished'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='not_refurbished'}>Not Refurbished ({cseg.notRefurbished.length})</button>
-              <button class="btn btn-sm {carSegment==='refurbished_pending'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='refurbished_pending'}>Refurbished/Pending ({cseg.refurbishedPending.length})</button>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={carForm.name} /></div>
-              <div class="col-md-6"><label class="form-label">Model</label><input class="form-control" bind:value={carForm.model} /></div>
-              <div class="col-md-6"><label class="form-label">Year Of Manufacture</label><input class="form-control" bind:value={carForm.year_of_manufacture} /></div>
-              <div class="col-md-6"><label class="form-label">VIN</label><input class="form-control" bind:value={carForm.vin} /></div>
-              <div class="col-md-6"><label class="form-label">Imported Date</label><input class="form-control" bind:value={carForm.imported_date} placeholder="YYYY-MM-DD" /></div>
-              <div class="col-md-6"><label class="form-label">Purchase Price</label><input class="form-control" bind:value={carForm.purchase_price} /></div>
-              <div class="col-md-6"><label class="form-label">Inspection From</label><input class="form-control" bind:value={carForm.inspection_from} /></div>
-              <div class="col-md-6"><label class="form-label">Inspection To</label><input class="form-control" bind:value={carForm.inspection_to} /></div>
-              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={carForm.status}><option value="AVAILABLE">Available</option><option value="AWAITING_DELIVERY">Awaiting Delivery</option><option value="SOLD">Sold</option></select></div>
-              <div class="col-md-6"><label class="form-label">Situation</label><select class="form-select" bind:value={carForm.car_situation}><option value="REFURBISHED">Refurbished</option><option value="NOT_REFURBISHED">Not Refurbished</option><option value="REFURBISHED_PENDING_CLEANING">Refurbished Pending Cleaning</option></select></div>
-              <div class="col-md-6"><label class="form-label">Color</label><input class="form-control" bind:value={carForm.color} /></div>
-              <div class="col-md-6"><label class="form-label">Branch</label><input class="form-control" bind:value={carForm.branch} /></div>
-              <div class="col-md-6"><label class="form-label">License Plate</label><input class="form-control" bind:value={carForm.license_plate_no} /></div>
-              <div class="col-md-6"><label class="form-label">Traded Company</label><input class="form-control" bind:value={carForm.traded_company} /></div>
-              <div class="col-md-6"><label class="form-label">Expected Selling Price</label><input class="form-control" bind:value={carForm.selling_price} /></div>
-              <div class="col-md-12"><label class="form-label">Note</label><textarea class="form-control" rows="3" bind:value={carForm.note}></textarea></div>
-              <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCarImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCarImages.length}</small></div>
-              <div class="col-md-12 d-flex gap-2">
-                <button class="btn btn-primary" onclick={saveCarRecord}>{routeMode==='detail' ? tt('update') : tt('create')}</button>
-                {#if routeMode==='detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?car_id=${selectedId || currentRouteId()}`)}>Add Customer Purchase</button>{/if}
-                <button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button>
-              </div>
-            </div>
+            <CarsPage {routeMode} {carForm} {carSegmentation} {carSegment} setCarSegment={(v)=>carSegment=v} {pendingCarImages} setPendingCarImages={(v)=>pendingCarImages=v} {saveCarRecord} {clearEditor} {go} {selectedId} {currentRouteId} tt={tt} />
           {:else if activeModule === 'customers'}
-            {@const custSeg = customerSegmentation()}
-            <div class="row g-3 mb-3">
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Customers</p><h4 class="mb-0">{custSeg.customers.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Active Customers</p><h4 class="mb-0">{custSeg.activeCustomers.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Potential Leads</p><h4 class="mb-0">{custSeg.leads}</h4></div></div></div>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <button class="btn btn-sm {customerSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => customerSegment='all'}>All ({custSeg.customers.length})</button>
-              <button class="btn btn-sm {customerSegment==='active'?'btn-primary':'btn-outline-primary'}" onclick={() => customerSegment='active'}>Active ({custSeg.activeCustomers.length})</button>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={customerForm.name} /></div>
-              <div class="col-md-6"><label class="form-label">Gender</label><select class="form-select" bind:value={customerForm.gender}><option value="unknown">Unknown</option><option value="male">Male</option><option value="female">Female</option></select></div>
-              <div class="col-md-12"><label class="form-label">Address</label><input class="form-control" bind:value={customerForm.address} /></div>
-              <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" bind:value={customerForm.phone} /></div>
-              <div class="col-md-6"><label class="form-label">Birthday</label><input class="form-control" bind:value={customerForm.birth_day} placeholder="YYYY-MM-DD" /></div>
-              <div class="col-md-6"><label class="form-label">Facebook</label><input class="form-control" bind:value={customerForm.facebook} /></div>
-              <div class="col-md-6"><label class="form-label">Lead Source</label><input class="form-control" bind:value={customerForm.lead_source} /></div>
-              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={customerForm.status}><option value="">Customer status</option><option value="paid">Paid</option><option value="wait2pay">Wait to pay</option></select></div>
-              <div class="col-md-12"><label class="form-label">Note</label><textarea rows="3" class="form-control" bind:value={customerForm.note}></textarea></div>
-              <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCustomerImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCustomerImages.length}</small></div>
-              <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={saveCustomerRecord}>{routeMode==='detail' ? tt('update') : tt('create')}</button>{#if routeMode==='detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?customer_id=${selectedId || currentRouteId()}`)}>Add Purchase</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
-            </div>
+            <CustomersPage {routeMode} {customerForm} {customerSegmentation} {customerSegment} setCustomerSegment={(v)=>customerSegment=v} {pendingCustomerImages} setPendingCustomerImages={(v)=>pendingCustomerImages=v} {saveCustomerRecord} {clearEditor} {go} {selectedId} {currentRouteId} tt={tt} />
           {:else if activeModule === 'transactions'}
             <TransactionsPage {routeMode} {transactionForm} {transactionItems} setError={(v) => error = v} {syncTransactionDraftFromForm} {saveRecord} {clearEditor} {addTransactionItem} {removeTransactionItem} {transactionSummary} {transactionStatusGroups} {filter} setFilter={(v) => filter = v} tt={tt} />
           {:else}
