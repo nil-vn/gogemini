@@ -988,3 +988,33 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Không blocker kỹ thuật trong phạm vi WBS-3.
 - Next Action:
   - Chuyển sang WBS-4 cho asset + interaction integration hardening.
+
+## 2026-05-21 | WBS-4 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Thiết lập chiến lược asset path deterministic cho Vite bằng cách expose nguyên bộ `static/admin` qua `frontend/public/admin` và cập nhật CSS import sang đường dẫn tuyệt đối runtime (`/admin/...`).
+  - Thay thế tương tác legacy phụ thuộc JS/jQuery ở shell level bằng hành vi Svelte-native (toggle sidebar, open/focus search, persist theme qua localStorage).
+  - Chuẩn hóa text/label shell theo wording legacy thông qua i18n dictionary thay vì hardcode trực tiếp trong component.
+- Files changed:
+  - frontend/public/admin/**
+  - frontend/src/styles/legacy-admin.css
+  - frontend/src/lib/i18n.ts
+  - frontend/src/components/layout/AdminLayout.svelte
+  - frontend/src/components/layout/AdminHeader.svelte
+  - frontend/src/components/layout/AdminSidebar.svelte
+  - frontend/src/App.svelte
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run check` => PASS
+  - `cd frontend && npm run build` => PASS
+  - `cd frontend && npm run test:unit` => PASS
+- DoD Mapping:
+  - [x] 4.1 Asset static được reuse qua deterministic Vite public path, không phụ thuộc relative traversal.
+  - [x] 4.2 Tương tác shell chính không còn phụ thuộc legacy JS/jQuery (sidebar/search/theme state handled in Svelte).
+  - [x] 4.3 Nhãn i18n quan trọng của shell dùng dictionary để giữ wording nhất quán.
+- Risks/Blockers:
+  - Không blocker trong phạm vi WBS-4.
+- Next Action:
+  - Chuyển WBS-5 để mã hóa parity checklist + visual/DOM/a11y gates.

@@ -8,15 +8,22 @@
   export let onSearchTermInput: (value: string) => void;
   export let onSearch: () => void;
   export let onThemeChange: (theme: 'dark' | 'light') => void;
+  export let t: (key: string) => string = (key) => key;
 
+  let isSidebarCollapsed = false;
+  function toggleSidebar() {
+    isSidebarCollapsed = !isSidebarCollapsed;
+  }
 </script>
 
-<a href="#main-content" class="skip-link">Skip to main content</a>
-<nav class="pc-sidebar" aria-label="Admin sidebar">
-  <AdminSidebar {activePath} {onNavigate} />
-</nav>
+<a href="#main-content" class="skip-link">{t('a11ySkipToContent')}</a>
+<div class:pc-sidebar-hide={isSidebarCollapsed}>
+  <nav class="pc-sidebar" aria-label="Admin sidebar">
+    <AdminSidebar {activePath} {onNavigate} {t} />
+  </nav>
+</div>
 <header class="pc-header" aria-label="Admin header">
-  <AdminHeader onSearch={onSearch} onThemeChange={onThemeChange} searchTerm={globalSearchTerm} {onSearchTermInput} />
+  <AdminHeader onSearch={onSearch} onThemeChange={onThemeChange} searchTerm={globalSearchTerm} {onSearchTermInput} onToggleSidebar={toggleSidebar} {t} />
 </header>
 <div class="pc-container">
   <div class="pc-content" id="main-content" tabindex="-1">

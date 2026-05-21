@@ -211,6 +211,7 @@
       onSearch={runGlobalSearch}
       onSearchTermInput={(value) => globalSearchTerm = value}
       onThemeChange={(theme) => document.body.setAttribute('data-pc-theme', theme)}
+      t={tt}
     >
     {#if globalSearchTerm.trim().length > 0}
       <div class="card mb-3">
