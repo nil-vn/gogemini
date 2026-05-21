@@ -12,9 +12,11 @@
     <ul class="pc-navbar">
       <li class="pc-item pc-caption"><span>{t('sidebarNavigation')}</span></li>
       <li class="pc-item"><button type="button" class="pc-link border-0 bg-transparent text-start w-100 {isActive('/admin/dashboard') ? 'active' : ''}" onclick={() => onNavigate('/admin/dashboard')}><span class="pc-mtext">Dashboard</span></button></li>
+      <li class="pc-item pc-caption"><span>Modules</span></li>
       {#each ['users','cars','customers','transactions'] as m}
         <li class="pc-item"><button type="button" class="pc-link border-0 bg-transparent text-start w-100 {isActive(`/admin/${m}`) ? 'active' : ''}" onclick={() => onNavigate(`/admin/${m}`)}><span class="pc-mtext text-capitalize">{m}</span></button></li>
       {/each}
+      <li class="pc-item pc-caption"><span>Tools</span></li>
       <li class="pc-item"><button type="button" class="pc-link border-0 bg-transparent text-start w-100 {isActive('/admin/search') ? 'active' : ''}" onclick={() => onNavigate('/admin/search')}><span class="pc-mtext">Search</span></button></li>
       <li class="pc-item"><button type="button" class="pc-link border-0 bg-transparent text-start w-100 {isActive('/admin/system') ? 'active' : ''}" onclick={() => onNavigate('/admin/system')}><span class="pc-mtext">{t('navSystem')}</span></button></li>
     </ul>

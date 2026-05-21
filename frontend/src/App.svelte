@@ -10,6 +10,10 @@
   import SettingsForm from './components/SettingsForm.svelte';
   import UploadForm from './components/UploadForm.svelte';
   import AdminLayout from './components/layout/AdminLayout.svelte';
+  import Breadcrumbs from './components/ui/Breadcrumbs.svelte';
+  import NoticeStack from './components/ui/NoticeStack.svelte';
+  import ContentState from './components/ui/ContentState.svelte';
+  import SectionCard from './components/ui/SectionCard.svelte';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
   const moduleSet = new Set<ModuleKey>(modules);
@@ -245,74 +249,63 @@
       onThemeChange={(theme) => document.body.setAttribute('data-pc-theme', theme)}
       t={tt}
     >
+      <Breadcrumbs onNavigate={go} items={[{ label: "Dashboard", path: "/admin/dashboard" }, ...(route.kind === "dashboard" ? [] : [{ label: route.kind === "settings" ? "System" : route.kind === "search" ? "Search" : activeModule }])]} />
+      <NoticeStack isLoading={isLoading} message={message} error={error} onRetry={retryLastAction} t={tt} />
     {#if globalSearchTerm.trim().length > 0}
-      <div class="card mb-3">
-        <div class="card-header"><h5 class="mb-0">{tt('searchResults')}</h5></div>
-        <div class="card-body">
-          <div class="row g-3">
-            {#each modules as module}
-              <div class="col-md-6">
-                <div class="border rounded p-3 h-100">
-                  <h6 class="mb-2 text-capitalize">{module}</h6>
-                  <p class="text-muted mb-2">{searchResults[module]?.length ?? 0} kết quả</p>
-                  {#if (searchResults[module]?.length ?? 0) > 0}
-                    <ul class="mb-0 ps-3">
-                      {#each searchResults[module].slice(0, 3) as result}
-                        <li>{String(result.id ?? '-')} - {JSON.stringify(result).slice(0, 80)}...</li>
-                      {/each}
-                    </ul>
-                  {/if}
-                </div>
+      <SectionCard title={tt('searchResults')}>
+        <div class="row g-3">
+          {#each modules as module}
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h6 class="mb-2 text-capitalize">{module}</h6>
+                <p class="text-muted mb-2">{searchResults[module]?.length ?? 0} kết quả</p>
+                {#if (searchResults[module]?.length ?? 0) > 0}
+                  <ul class="mb-0 ps-3">
+                    {#each searchResults[module].slice(0, 3) as result}
+                      <li>{String(result.id ?? '-')} - {JSON.stringify(result).slice(0, 80)}...</li>
+                    {/each}
+                  </ul>
+                {/if}
               </div>
-            {/each}
-          </div>
+            </div>
+          {/each}
         </div>
-      </div>
+      </SectionCard>
     {/if}
 
     {#if route.kind === 'dashboard'}
       <section>
         <h3 class="mb-3">{tt('dashboardTitle')}</h3>
         <div class="row">
-          {#if dashboard}
+          {#if dashboard && Object.keys(dashboard).length > 0}
             {#each Object.entries(dashboard) as [key, value]}
               <div class="col-md-3 col-sm-6 mb-3">
-                <div class="card">
-                  <div class="card-body">
-                    <p class="text-muted mb-1 text-capitalize">{key.replaceAll('_', ' ')}</p>
-                    <h4 class="mb-0">{String(value)}</h4>
-                  </div>
-                </div>
+                <div class="card"><div class="card-body"><p class="text-muted mb-1 text-capitalize">{key.replaceAll('_', ' ')}</p><h4 class="mb-0">{String(value)}</h4></div></div>
               </div>
             {/each}
+          {:else}
+            <ContentState title="No dashboard data" description="No metrics returned yet." />
           {/if}
         </div>
       </section>
     {:else if route.kind === 'settings'}
       <SettingsForm settings={settings} onSave={saveSettings} t={tt} onLanguageChange={(next: Locale) => setLocale(next)} />
     {:else if route.kind === 'search'}
-      <div class="card mb-3">
-        <div class="card-header"><h5 class="mb-0">Search</h5></div>
-        <div class="card-body">
-          <p class="text-muted mb-2">Dedicated search page parity route: <code>/admin/search</code></p>
-          <div class="d-flex gap-2">
-            <input class="form-control" bind:value={globalSearchTerm} placeholder="Search across modules..." />
-            <button class="btn btn-primary" onclick={runGlobalSearch}>Run Search</button>
-          </div>
+      <SectionCard title="Search" subtitle="Dedicated search workflow parity at /admin/search">
+        <p class="text-muted mb-2">Dedicated search page parity route: <code>/admin/search</code></p>
+        <div class="d-flex gap-2">
+          <input class="form-control" bind:value={globalSearchTerm} placeholder="Search across modules..." />
+          <button class="btn btn-primary" onclick={runGlobalSearch}>Run Search</button>
         </div>
-      </div>
+      </SectionCard>
     {:else if route.kind === 'module-list' || route.kind === 'module-new' || route.kind === 'module-detail'}
-      <div class="card mb-3">
-        <div class="card-header"><h5 class="mb-0">{tt('managementTitle', { module: activeModule })}</h5></div>
-        <div class="card-body">
-          <div class="d-flex flex-wrap gap-2 mb-3">
+      <SectionCard title={tt('managementTitle', { module: activeModule })} subtitle="Shared form + table density parity" actions={true}>
+          <div slot="actions" class="d-flex gap-2">
             <button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule}`)}>List</button>
             <button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule.slice(0, -1)}/new`)}>New</button>
-            {#if selectedId}
-              <button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule.slice(0, -1)}/${selectedId}`)}>Detail</button>
-            {/if}
+            {#if selectedId}<button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule.slice(0, -1)}/${selectedId}`)}>Detail</button>{/if}
           </div>
-          {#if route.kind === 'module-new'}
+                    {#if route.kind === 'module-new'}
             <p class="text-muted">Create route active: <code>/admin/{activeModule.slice(0, -1)}/new</code></p>
           {/if}
           {#if route.kind === 'module-detail'}
@@ -330,8 +323,7 @@
               }
             }}></textarea></div>
           </div>
-        </div>
-      </div>
+      </SectionCard>
       {#if activeModule === 'cars' || activeModule === 'customers'}
         <UploadForm onUpload={uploadImage} t={tt} />
       {/if}
@@ -355,9 +347,5 @@
   {:else}
     <p><a href="#/auth/login">{tt('login')}</a> | <a href="#/admin/dashboard">{tt('admin')}</a></p>
   {/if}
-  <section aria-live="polite" aria-label={tt('a11yStatusLabel')}>
-    {#if isLoading}<p>{tt('loading')}</p>{/if}
-    {#if message}<p style="color:green">{message}</p>{/if}
-    {#if error}<p style="color:red">{tt('errorTitle')}: {error} <button onclick={retryLastAction}>{tt('retry')}</button></p>{/if}
-  </section>
+
 </main>
