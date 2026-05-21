@@ -17,7 +17,7 @@ Date: 2026-05-21
 - [x] FE dynamic line-item add/remove UI exists.
 - [x] Backend persists/loads/syncs transaction items (`transaction_item`).
 - [x] CRUD parity test exists (`TestTransactionItemsCRUDParity`).
-- [ ] Add UI-level automated flow test for multi-item create/update.
+- [x] Add UI-level automated flow test for multi-item create/update.
 
 ## P0-04 — Car/Customer purchase shortcut flows
 - [x] Shortcut links from Car/Customer detail to Transaction new with query params.
