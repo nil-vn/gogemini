@@ -20,6 +20,15 @@
   import CustomersPage from './pages/admin/CustomersPage.svelte';
   import SearchPage from './pages/admin/SearchPage.svelte';
   import NotFoundPage from './pages/admin/NotFoundPage.svelte';
+  import {
+    buildTransactionSummary,
+    toCarForm,
+    toCustomerForm,
+    toTransactionForm,
+    toTransactionItems,
+    toUserForm,
+    validateUserForm as validateUserFormModel
+  } from './lib/adminPageModels';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
 
@@ -224,17 +233,6 @@
   }
 
 
-  function toUserForm(input: Partial<ModuleRecord> = {}) {
-    return {
-      username: String(input.username ?? ''),
-      email: String(input.email ?? ''),
-      password: '',
-      confirm_password: '',
-      role: String(input.role ?? 'guest') || 'guest',
-      status: String(input.status ?? 'Active') || 'Active'
-    };
-  }
-
   function userSegmentation() {
     const users = records.users ?? [];
     const adminUsers = users.filter((u) => String(u.role ?? '').toLowerCase() === 'admin');
@@ -249,15 +247,7 @@
     draft.name = userForm.username.trim();
   }
 
-  function validateUserForm(isEdit = false) {
-    if (!userForm.username.trim()) return 'Username is required';
-    if (userForm.password || userForm.confirm_password) {
-      if (userForm.password !== userForm.confirm_password) return 'Password confirmation does not match';
-    } else if (!isEdit) {
-      return 'Password is required for new user';
-    }
-    return '';
-  }
+  function validateUserForm(isEdit = false) { return validateUserFormModel(userForm, isEdit); }
 
   function visibleItems(module: ModuleKey) {
     const list = records[module] ?? [];
@@ -295,26 +285,6 @@
     if (carSegment === 'refurbished_pending') return seg.refurbishedPending;
     return seg.cars;
   }
-  function toCarForm(input: Partial<ModuleRecord> = {}) {
-    return {
-      name: String(input.name ?? ''),
-      model: String(input.model ?? ''),
-      year_of_manufacture: String(input.year_of_manufacture ?? ''),
-      vin: String(input.vin ?? ''),
-      imported_date: String(input.imported_date ?? ''),
-      purchase_price: String(input.purchase_price ?? ''),
-      inspection_from: String(input.inspection_from ?? ''),
-      status: String(input.status ?? 'AVAILABLE') || 'AVAILABLE',
-      car_situation: String(input.car_situation ?? 'NOT_REFURBISHED') || 'NOT_REFURBISHED',
-      color: String(input.color ?? ''),
-      branch: String(input.branch ?? ''),
-      license_plate_no: String(input.license_plate_no ?? ''),
-      traded_company: String(input.traded_company ?? ''),
-      selling_price: String(input.selling_price ?? ''),
-      inspection_to: String(input.inspection_to ?? ''),
-      note: String(input.note ?? '')
-    };
-  }
   function syncCarDraftFromForm() { draft = { ...draft, ...carForm }; }
   async function saveCarRecord() {
     if (!carForm.name.trim()) { error = 'Name is required'; return; }
@@ -330,19 +300,6 @@
     const activeCustomers = customers.filter((c) => Array.isArray((c as any).transactions) && (c as any).transactions.length > 0);
     return { customers, activeCustomers, leads: customers.length - activeCustomers.length };
   }
-  function toCustomerForm(input: Partial<ModuleRecord> = {}) {
-    return {
-      name: String(input.name ?? ''),
-      gender: String(input.gender ?? 'unknown') || 'unknown',
-      address: String(input.address ?? ''),
-      phone: String(input.phone ?? ''),
-      birth_day: String(input.birth_day ?? ''),
-      facebook: String(input.facebook ?? ''),
-      lead_source: String(input.lead_source ?? ''),
-      status: String(input.status ?? ''),
-      note: String(input.note ?? '')
-    };
-  }
   function syncCustomerDraftFromForm() { draft = { ...draft, ...customerForm }; }
   async function saveCustomerRecord() {
     if (!customerForm.name.trim()) { error = 'Name is required'; return; }
@@ -354,37 +311,13 @@
     }
   }
 
-
-  function toTransactionForm(input: Partial<ModuleRecord> = {}) {
-    return {
-      customer_id: String((input as any).customer_id ?? (input as any).customer?.id ?? ''),
-      car_id: String((input as any).car_id ?? (Array.isArray((input as any).cars) && (input as any).cars[0]?.id) ?? ''),
-      purchase_date: String(input.purchase_date ?? ''),
-      selling_price: String(input.selling_price ?? ''),
-      deposit_amount: String(input.deposit_amount ?? ''),
-      status: String(input.status ?? ''),
-      note: String(input.note ?? '')
-    };
-  }
-  function toTransactionItems(input: Partial<ModuleRecord> = {}) {
-    const raw = Array.isArray((input as any).items) ? (input as any).items : [];
-    const mapped = raw.map((it: any) => ({ name: String(it?.name ?? ''), price: String(it?.price ?? '') }));
-    return mapped.length ? mapped : [{ name: '', price: '' }];
-  }
   function addTransactionItem() { transactionItems = [...transactionItems, { name: '', price: '' }]; }
   function removeTransactionItem(index: number) { transactionItems = transactionItems.filter((_, i) => i !== index); if (!transactionItems.length) transactionItems = [{ name: '', price: '' }]; }
   function syncTransactionDraftFromForm() {
     const items = transactionItems.filter((it) => it.name.trim() || it.price.trim()).map((it) => ({ name: it.name.trim(), price: Number(it.price || 0) }));
     draft = { ...draft, ...transactionForm, items };
   }
-  function transactionSummary() {
-    const txs = records.transactions ?? [];
-    const toNum = (v: unknown) => Number(v ?? 0) || 0;
-    const totalRevenue = txs.reduce((acc, tx: any) => acc + toNum(tx.total_amount || tx.selling_price), 0);
-    const paidRevenue = txs.filter((tx: any) => String(tx.status ?? '').toLowerCase().includes('paid') || String(tx.status ?? '').includes('Đã')).reduce((acc, tx: any) => acc + toNum(tx.total_amount || tx.selling_price), 0);
-    const depositedAmount = txs.filter((tx: any) => !(String(tx.status ?? '').toLowerCase().includes('paid') || String(tx.status ?? '').includes('Đã'))).reduce((acc, tx: any) => acc + toNum(tx.deposit_amount), 0);
-    return { txs, totalRevenue, paidRevenue, depositedAmount };
-  }
+  function transactionSummary() { return buildTransactionSummary(records.transactions ?? []); }
   function transactionStatusGroups() {
     const txs = records.transactions ?? [];
     const isPaid = (tx: any) => String(tx.status ?? '').toLowerCase().includes('paid') || String(tx.status ?? '').includes('Đã');
@@ -550,13 +483,7 @@
     {/if}
     </AdminLayout>
 {:else if route.kind === 'not-found'}
-    <div class="card">
-      <div class="card-body">
-        <h3 class="mb-2">404</h3>
-        <p class="mb-3">Route not found: <code>{route.path}</code></p>
-        <button class="btn btn-primary" onclick={() => go('/admin/dashboard')}>Go to dashboard</button>
-      </div>
-    </div>
+    <NotFoundPage path={route.path} {go} />
   {:else}
     <p><a href="#/auth/login">{tt('login')}</a> | <a href="#/admin/dashboard">{tt('admin')}</a></p>
   {/if}
