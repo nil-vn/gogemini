@@ -7,20 +7,18 @@
   export let onLanguageChange: (locale: Locale) => void;
 </script>
 
-<section>
-  <h3>{t('settingsTitle')}</h3>
-  <label>{t('currency')} <input bind:value={settings.currency} /></label>
-  <label>{t('theme')}
-    <select bind:value={settings.theme}>
-      <option value="dark">{t('dark')}</option>
-      <option value="light">{t('light')}</option>
-    </select>
-  </label>
-  <label>{t('language')}
-    <select bind:value={settings.language} onchange={() => onLanguageChange(settings.language)}>
-      <option value="vi">vi</option>
-      <option value="en">en</option>
-    </select>
-  </label>
-  <button onclick={() => onSave(settings)}>{t('save')}</button>
-</section>
+<div class="card">
+  <div class="card-header"><h5 class="mb-0">{t('settingsTitle')}</h5></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4"><label class="form-label" for="settings-currency">{t('currency')}</label><input id="settings-currency" class="form-control" bind:value={settings.currency} /></div>
+      <div class="col-md-4"><label class="form-label" for="settings-theme">{t('theme')}</label>
+        <select id="settings-theme" class="form-select" bind:value={settings.theme}><option value="dark">{t('dark')}</option><option value="light">{t('light')}</option></select>
+      </div>
+      <div class="col-md-4"><label class="form-label" for="settings-language">{t('language')}</label>
+        <select id="settings-language" class="form-select" bind:value={settings.language} onchange={() => onLanguageChange(settings.language)}><option value="vi">vi</option><option value="en">en</option></select>
+      </div>
+      <div class="col-12"><button class="btn btn-primary" onclick={() => onSave(settings)}>{t('save')}</button></div>
+    </div>
+  </div>
+</div>

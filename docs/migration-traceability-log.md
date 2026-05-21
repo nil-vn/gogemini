@@ -959,3 +959,32 @@ Tất cả lượt implement/fix/review/go-live-check của migration phải app
   - Build blocker hiện tại do đường dẫn `@import` trong `frontend/src/styles/legacy-admin.css` trỏ sai tới `static/admin/css/plugins/style.css` (ngoài scope WBS-2 theo strict boundaries).
 - Next Action:
   - Chuyển WBS-3 cho component/page parity; xử lý stylesheet import path ở WBS-1/asset integration track.
+
+## 2026-05-21 | WBS-3 | IMPLEMENT
+- Owner: Codex
+- Branch/Commit: work @ (pending commit)
+- Related PR: PR created via make_pr (pending link/id)
+- Scope summary:
+  - Triển khai parity UI theo màn hình cho dashboard, CRUD list, form thao tác JSON, search/system và upload UX trong Svelte admin.
+  - Chuẩn hóa các màn hình sang card/table/form layout để bám sát legacy admin look-and-feel thay vì dump JSON thô.
+  - Giữ phạm vi đúng WBS-3 (không mở rộng sang visual regression gate hoặc asset hardening của WBS-4/5).
+- Files changed:
+  - frontend/src/App.svelte
+  - frontend/src/components/ModuleTable.svelte
+  - frontend/src/components/SettingsForm.svelte
+  - frontend/src/components/UploadForm.svelte
+  - docs/migration-traceability-log.md
+- Tests/Checks:
+  - `cd frontend && npm run check` => PASS
+  - `cd frontend && npm run test:unit` => PASS
+  - `cd frontend && npm run build` => FAIL (known pre-existing legacy CSS import path issue)
+- DoD Mapping:
+  - [x] Dashboard widgets/cards parity (WBS-3.1).
+  - [x] CRUD list screens có table/actions/pagination/filter UI (WBS-3.2).
+  - [x] Detail/create/edit form grouping + hierarchy CTA (WBS-3.3).
+  - [x] Search + system/settings page parity UI (WBS-3.4).
+  - [x] Upload UX có trạng thái file/preview/error (WBS-3.5).
+- Risks/Blockers:
+  - Không blocker kỹ thuật trong phạm vi WBS-3.
+- Next Action:
+  - Chuyển sang WBS-4 cho asset + interaction integration hardening.
