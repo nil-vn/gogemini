@@ -14,6 +14,9 @@
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
   const moduleSet = new Set<ModuleKey>(modules);
 
+  const legacyFallbackUrl = import.meta.env.VITE_UI_FALLBACK_LEGACY_URL ?? '';
+  const forceLegacyFallback = String(import.meta.env.VITE_UI_ROLLBACK_FORCE_LEGACY ?? 'false').toLowerCase() === 'true';
+
   type AppRoute =
     | { kind: 'home' }
     | { kind: 'login' }
@@ -193,6 +196,11 @@
   syncDraftText();
 
   onMount(() => {
+    if (forceLegacyFallback && legacyFallbackUrl) {
+      window.location.href = legacyFallbackUrl;
+      return;
+    }
+
     syncRoute();
     window.addEventListener('hashchange', syncRoute);
     return () => window.removeEventListener('hashchange', syncRoute);

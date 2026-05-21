@@ -12,7 +12,9 @@
     "lint": "eslint . --ext .ts,.svelte",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "test:unit": "vitest run --coverage"
+    "test:unit": "vitest run --coverage",
+    "test:wbs6:matrix": "playwright test tests/wbs6-browser-matrix.spec.ts --reporter=list",
+    "test:wbs6:perf": "playwright test tests/wbs6-performance.spec.ts --project=chromium --reporter=list"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
