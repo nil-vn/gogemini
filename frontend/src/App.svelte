@@ -39,6 +39,9 @@
   let settings: Settings = { currency: 'USD', theme: 'light', language: 'en' };
   let draft: Partial<ModuleRecord> = {};
   let userForm = { username: '', email: '', password: '', confirm_password: '', role: 'guest', status: 'Active' };
+  let carForm: Record<string, string> = { name: '', model: '', year_of_manufacture: '', vin: '', imported_date: '', purchase_price: '', inspection_from: '', status: 'AVAILABLE', car_situation: 'NOT_REFURBISHED', color: '', branch: '', license_plate_no: '', traded_company: '', selling_price: '', inspection_to: '', note: '' };
+  let pendingCarImages: File[] = [];
+  let carSegment = 'all';
   let selectedId = '';
   let filter = '';
   let globalSearchTerm = '';
@@ -85,7 +88,7 @@
 
   function go(path: string) { window.location.hash = `#${path}`; }
   function syncDraftText() { draftText = JSON.stringify(draft, null, 2); }
-  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); syncDraftText(); }
+  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); pendingCarImages = []; syncDraftText(); }
 
   async function guarded<T>(fn: () => Promise<T>) {
     try {
@@ -191,6 +194,7 @@
     selectedId = id;
     draft = { ...detail };
     if (module === 'users') userForm = toUserForm(detail);
+    if (module === 'cars') carForm = toCarForm(detail);
     syncDraftText();
   }
 
@@ -242,6 +246,60 @@
     const start = (page - 1) * pageSize;
     return { total: sorted.length, items: sorted.slice(start, start + pageSize) };
   }
+  function carSegmentation() {
+    const cars = records.cars ?? [];
+    const byStatus = (s: string[]) => cars.filter((c) => s.includes(String(c.status ?? '').toUpperCase()));
+    const bySituation = (s: string) => cars.filter((c) => String(c.car_situation ?? '').toUpperCase() === s);
+    return {
+      cars,
+      available: byStatus(['AVAILABLE', 'AWAITING_DELIVERY']),
+      awaiting: byStatus(['AWAITING_DELIVERY']),
+      sold: byStatus(['SOLD']),
+      refurbished: bySituation('REFURBISHED'),
+      notRefurbished: bySituation('NOT_REFURBISHED'),
+      refurbishedPending: bySituation('REFURBISHED_PENDING_CLEANING')
+    };
+  }
+  function visibleCarsBySegment() {
+    const seg = carSegmentation();
+    if (carSegment === 'available') return seg.available;
+    if (carSegment === 'awaiting') return seg.awaiting;
+    if (carSegment === 'sold') return seg.sold;
+    if (carSegment === 'refurbished') return seg.refurbished;
+    if (carSegment === 'not_refurbished') return seg.notRefurbished;
+    if (carSegment === 'refurbished_pending') return seg.refurbishedPending;
+    return seg.cars;
+  }
+  function toCarForm(input: Partial<ModuleRecord> = {}) {
+    return {
+      name: String(input.name ?? ''),
+      model: String(input.model ?? ''),
+      year_of_manufacture: String(input.year_of_manufacture ?? ''),
+      vin: String(input.vin ?? ''),
+      imported_date: String(input.imported_date ?? ''),
+      purchase_price: String(input.purchase_price ?? ''),
+      inspection_from: String(input.inspection_from ?? ''),
+      status: String(input.status ?? 'AVAILABLE') || 'AVAILABLE',
+      car_situation: String(input.car_situation ?? 'NOT_REFURBISHED') || 'NOT_REFURBISHED',
+      color: String(input.color ?? ''),
+      branch: String(input.branch ?? ''),
+      license_plate_no: String(input.license_plate_no ?? ''),
+      traded_company: String(input.traded_company ?? ''),
+      selling_price: String(input.selling_price ?? ''),
+      inspection_to: String(input.inspection_to ?? ''),
+      note: String(input.note ?? '')
+    };
+  }
+  function syncCarDraftFromForm() { draft = { ...draft, ...carForm }; }
+  async function saveCarRecord() {
+    if (!carForm.name.trim()) { error = 'Name is required'; return; }
+    syncCarDraftFromForm();
+    await saveRecord('cars');
+    if (pendingCarImages.length > 0) {
+      for (const file of pendingCarImages) await uploadImage({ module: 'cars', file });
+      pendingCarImages = [];
+    }
+  }
 
   async function bootstrapAdmin(module: ModuleKey) { clearEditor(); page = 1; await loadModule(module); syncDraftText(); }
 
@@ -253,7 +311,10 @@
     if (route.kind === 'dashboard') await bootstrapDashboard();
     if (route.kind === 'module-list' || route.kind === 'module-new' || route.kind === 'module-detail') {
       await bootstrapAdmin(route.module);
-      if (route.kind === 'module-detail') await selectRecord(route.module, route.id);
+      if (route.kind === 'module-detail') {
+        await selectRecord(route.module, route.id);
+        if (route.module === 'cars') carForm = toCarForm(draft);
+      }
     }
     if (route.kind === 'search') await runGlobalSearch();
     if (route.kind === 'settings') await loadSettings();
@@ -365,6 +426,46 @@
               <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={userForm.status}><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
               <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={async () => { const e = validateUserForm(route.kind==='module-detail'); if (e) { error = e; return; } syncUserDraftFromForm(); await saveRecord('users'); }}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button><button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
             </div>
+          {:else if activeModule === 'cars'}
+            {@const cseg = carSegmentation()}
+            <div class="row g-3 mb-3">
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Cars</p><h4 class="mb-0">{cseg.cars.length}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Available (inc. Awaiting)</p><h4 class="mb-0">{cseg.available.length}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Sold Cars</p><h4 class="mb-0">{cseg.sold.length}</h4></div></div></div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-sm {carSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='all'}>All ({cseg.cars.length})</button>
+              <button class="btn btn-sm {carSegment==='available'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='available'}>Available ({cseg.available.length})</button>
+              <button class="btn btn-sm {carSegment==='awaiting'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='awaiting'}>Awaiting ({cseg.awaiting.length})</button>
+              <button class="btn btn-sm {carSegment==='sold'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='sold'}>Sold ({cseg.sold.length})</button>
+              <button class="btn btn-sm {carSegment==='refurbished'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='refurbished'}>Refurbished ({cseg.refurbished.length})</button>
+              <button class="btn btn-sm {carSegment==='not_refurbished'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='not_refurbished'}>Not Refurbished ({cseg.notRefurbished.length})</button>
+              <button class="btn btn-sm {carSegment==='refurbished_pending'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='refurbished_pending'}>Refurbished/Pending ({cseg.refurbishedPending.length})</button>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={carForm.name} /></div>
+              <div class="col-md-6"><label class="form-label">Model</label><input class="form-control" bind:value={carForm.model} /></div>
+              <div class="col-md-6"><label class="form-label">Year Of Manufacture</label><input class="form-control" bind:value={carForm.year_of_manufacture} /></div>
+              <div class="col-md-6"><label class="form-label">VIN</label><input class="form-control" bind:value={carForm.vin} /></div>
+              <div class="col-md-6"><label class="form-label">Imported Date</label><input class="form-control" bind:value={carForm.imported_date} placeholder="YYYY-MM-DD" /></div>
+              <div class="col-md-6"><label class="form-label">Purchase Price</label><input class="form-control" bind:value={carForm.purchase_price} /></div>
+              <div class="col-md-6"><label class="form-label">Inspection From</label><input class="form-control" bind:value={carForm.inspection_from} /></div>
+              <div class="col-md-6"><label class="form-label">Inspection To</label><input class="form-control" bind:value={carForm.inspection_to} /></div>
+              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={carForm.status}><option value="AVAILABLE">Available</option><option value="AWAITING_DELIVERY">Awaiting Delivery</option><option value="SOLD">Sold</option></select></div>
+              <div class="col-md-6"><label class="form-label">Situation</label><select class="form-select" bind:value={carForm.car_situation}><option value="REFURBISHED">Refurbished</option><option value="NOT_REFURBISHED">Not Refurbished</option><option value="REFURBISHED_PENDING_CLEANING">Refurbished Pending Cleaning</option></select></div>
+              <div class="col-md-6"><label class="form-label">Color</label><input class="form-control" bind:value={carForm.color} /></div>
+              <div class="col-md-6"><label class="form-label">Branch</label><input class="form-control" bind:value={carForm.branch} /></div>
+              <div class="col-md-6"><label class="form-label">License Plate</label><input class="form-control" bind:value={carForm.license_plate_no} /></div>
+              <div class="col-md-6"><label class="form-label">Traded Company</label><input class="form-control" bind:value={carForm.traded_company} /></div>
+              <div class="col-md-6"><label class="form-label">Expected Selling Price</label><input class="form-control" bind:value={carForm.selling_price} /></div>
+              <div class="col-md-12"><label class="form-label">Note</label><textarea class="form-control" rows="3" bind:value={carForm.note}></textarea></div>
+              <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCarImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCarImages.length}</small></div>
+              <div class="col-md-12 d-flex gap-2">
+                <button class="btn btn-primary" onclick={saveCarRecord}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>
+                {#if route.kind === 'module-detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?car_id=${selectedId || route.id}`)}>Add Customer Purchase</button>{/if}
+                <button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button>
+              </div>
+            </div>
           {:else}
           <div class="row g-3 mb-3">
             <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
@@ -383,7 +484,7 @@
       {#if activeModule === 'cars' || activeModule === 'customers'}
         <UploadForm onUpload={uploadImage} t={tt} />
       {/if}
-      {@const view = visibleItems(activeModule)}
+      {@const view = activeModule === 'cars' ? { total: visibleCarsBySegment().length, items: visibleCarsBySegment().slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize) } : visibleItems(activeModule)}
       <ModuleTable title={activeModule} items={view.items} total={view.total} page={page} pageSize={pageSize} onDetail={(id) => selectRecord(activeModule, id)} onDelete={(id) => removeRecord(activeModule, id)} t={tt} />
       <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
         <button class="btn btn-outline-secondary btn-sm" disabled={page<=1} onclick={() => page = page - 1}>{tt('prev')}</button>
