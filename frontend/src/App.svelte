@@ -213,43 +213,78 @@
       onThemeChange={(theme) => document.body.setAttribute('data-pc-theme', theme)}
     >
     {#if globalSearchTerm.trim().length > 0}
-      <section class="mb-3">
-        <h4>{tt('searchResults')}</h4>
-        <pre>{JSON.stringify(searchResults, null, 2)}</pre>
-      </section>
+      <div class="card mb-3">
+        <div class="card-header"><h5 class="mb-0">{tt('searchResults')}</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            {#each modules as module}
+              <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                  <h6 class="mb-2 text-capitalize">{module}</h6>
+                  <p class="text-muted mb-2">{searchResults[module]?.length ?? 0} kết quả</p>
+                  {#if (searchResults[module]?.length ?? 0) > 0}
+                    <ul class="mb-0 ps-3">
+                      {#each searchResults[module].slice(0, 3) as result}
+                        <li>{String(result.id ?? '-')} - {JSON.stringify(result).slice(0, 80)}...</li>
+                      {/each}
+                    </ul>
+                  {/if}
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
     {/if}
 
     {#if route.kind === 'dashboard'}
-      <section><h3>{tt('dashboardTitle')}</h3>{#if dashboard}<pre>{JSON.stringify(dashboard, null, 2)}</pre>{/if}</section>
+      <section>
+        <h3 class="mb-3">{tt('dashboardTitle')}</h3>
+        <div class="row">
+          {#if dashboard}
+            {#each Object.entries(dashboard) as [key, value]}
+              <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <p class="text-muted mb-1 text-capitalize">{key.replaceAll('_', ' ')}</p>
+                    <h4 class="mb-0">{String(value)}</h4>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          {/if}
+        </div>
+      </section>
     {:else if route.kind === 'settings'}
       <SettingsForm settings={settings} onSave={saveSettings} t={tt} onLanguageChange={(next: Locale) => setLocale(next)} />
     {:else if route.kind === 'admin'}
-      <section>
-        <h3>{tt('managementTitle', { module: activeModule })}</h3>
-        <label>{tt('filterLabel')} <input bind:value={filter} placeholder={tt('filterPlaceholder')} /></label>
-        <label>{tt('sortById')}
-          <select bind:value={sort}><option value="asc">asc</option><option value="desc">desc</option></select>
-        </label>
-        <button onclick={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button>
-        <button onclick={clearEditor}>{tt('reset')}</button>
-        <textarea rows="8" bind:value={draftText} onchange={() => {
-          try {
-            draft = JSON.parse(draftText);
-          } catch (parseError) {
-            error = (parseError as Error).message;
-          }
-        }}></textarea>
-      </section>
+      <div class="card mb-3">
+        <div class="card-header"><h5 class="mb-0">{tt('managementTitle', { module: activeModule })}</h5></div>
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
+            <div class="col-md-3"><label class="form-label" for="sort-input">{tt('sortById')}</label><select id="sort-input" class="form-select" bind:value={sort}><option value="asc">asc</option><option value="desc">desc</option></select></div>
+            <div class="col-md-5 d-flex align-items-end gap-2"><button class="btn btn-primary" onclick={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button><button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
+            <div class="col-12"><label class="form-label" for="draft-json">JSON payload</label><textarea id="draft-json" class="form-control" rows="8" bind:value={draftText} onchange={() => {
+              try {
+                draft = JSON.parse(draftText);
+              } catch (parseError) {
+                error = (parseError as Error).message;
+              }
+            }}></textarea></div>
+          </div>
+        </div>
+      </div>
       {#if activeModule === 'cars' || activeModule === 'customers'}
         <UploadForm onUpload={uploadImage} t={tt} />
       {/if}
       {@const view = visibleItems(activeModule)}
       <ModuleTable title={activeModule} items={view.items} total={view.total} page={page} pageSize={pageSize} onDetail={(id) => selectRecord(activeModule, id)} onDelete={(id) => removeRecord(activeModule, id)} t={tt} />
-      <section>
-        <button disabled={page<=1} onclick={() => page = page - 1}>{tt('prev')}</button>
+      <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+        <button class="btn btn-outline-secondary btn-sm" disabled={page<=1} onclick={() => page = page - 1}>{tt('prev')}</button>
         <span>{tt('page')} {page}</span>
-        <button disabled={page*pageSize>=view.total} onclick={() => page = page + 1}>{tt('next')}</button>
-      </section>
+        <button class="btn btn-outline-secondary btn-sm" disabled={page*pageSize>=view.total} onclick={() => page = page + 1}>{tt('next')}</button>
+      </div>
     {/if}
     </AdminLayout>
 {:else}
