@@ -29,11 +29,16 @@
     toUserForm,
     validateUserForm as validateUserFormModel
   } from './lib/adminPageModels';
+  import { isDebugJsonEditorEnabled } from './lib/debugAccess';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
 
   const legacyFallbackUrl = import.meta.env.VITE_UI_FALLBACK_LEGACY_URL ?? '';
   const forceLegacyFallback = String(import.meta.env.VITE_UI_ROLLBACK_FORCE_LEGACY ?? 'false').toLowerCase() === 'true';
+  const debugJsonEditorEnabled = isDebugJsonEditorEnabled({
+    debugJsonEditorFlag: import.meta.env.VITE_UI_DEBUG_JSON_EDITOR,
+    isProd: import.meta.env.PROD
+  });
 
   type AppRoute =
     | { kind: 'home' }
@@ -41,6 +46,7 @@
     | { kind: 'dashboard' }
     | { kind: 'settings' }
     | { kind: 'search' }
+    | { kind: 'debug-json-editor' }
     | { kind: 'users-list' }
     | { kind: 'users-new' }
     | { kind: 'users-detail'; id: string }
@@ -101,6 +107,9 @@
     if (normalized === '/admin' || normalized === '/admin/dashboard') return { kind: 'dashboard' };
     if (normalized === '/admin/system') return { kind: 'settings' };
     if (normalized === '/admin/search') return { kind: 'search' };
+    if (normalized === '/admin/debug/json-editor') {
+      return debugJsonEditorEnabled ? { kind: 'debug-json-editor' } : { kind: 'not-found', path: normalized };
+    }
     if (normalized === '/admin/users') return { kind: 'users-list' };
     if (normalized === '/admin/user/new') return { kind: 'users-new' };
     if (normalized.startsWith('/admin/user/')) return { kind: 'users-detail', id: decodeURIComponent(normalized.split('/').pop() || '') };
@@ -424,6 +433,11 @@
       <SectionCard title="Search" subtitle="Dedicated search workflow parity at /admin/search">
         <p class="text-muted mb-2">Dedicated search page parity route: <code>/admin/search</code></p>
         <SearchPage {globalSearchTerm} setGlobalSearchTerm={(v)=>globalSearchTerm=v} {runGlobalSearch} />
+      </SectionCard>
+    {:else if route.kind === 'debug-json-editor'}
+      <SectionCard title="Debug JSON editor" subtitle="Development-only fallback CRUD view">
+        <p class="text-warning">Debug editor is enabled only in non-production builds.</p>
+        <ModuleTable title={activeModule} items={visibleItems(activeModule).items} total={visibleItems(activeModule).total} page={page} pageSize={pageSize} onDetail={(id) => selectRecord(activeModule, id)} onDelete={(id) => removeRecord(activeModule, id)} t={tt} />
       </SectionCard>
     {:else if route.kind.endsWith('-list') || route.kind.endsWith('-new') || route.kind.endsWith('-detail')}
       <SectionCard title={tt('managementTitle', { module: activeModule })} subtitle="Shared form + table density parity" actions={true}>

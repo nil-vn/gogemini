@@ -10,8 +10,8 @@ Date: 2026-05-21
 
 ## P0-02 — Remove generic JSON CRUD as default view
 - [x] JSON payload editor is hidden behind debug flag (`VITE_UI_DEBUG_JSON_EDITOR`).
-- [ ] Confirm debug editor cannot be accessed in production profile.
-- [ ] Add test/guard for flag behavior in prod config.
+- [x] Confirm debug editor cannot be accessed in production profile.
+- [x] Add test/guard for flag behavior in prod config.
 
 ## P0-03 — Transaction dynamic line-item parity
 - [x] FE dynamic line-item add/remove UI exists.
