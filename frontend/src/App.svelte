@@ -41,6 +41,9 @@
   let userForm = { username: '', email: '', password: '', confirm_password: '', role: 'guest', status: 'Active' };
   let carForm: Record<string, string> = { name: '', model: '', year_of_manufacture: '', vin: '', imported_date: '', purchase_price: '', inspection_from: '', status: 'AVAILABLE', car_situation: 'NOT_REFURBISHED', color: '', branch: '', license_plate_no: '', traded_company: '', selling_price: '', inspection_to: '', note: '' };
   let pendingCarImages: File[] = [];
+  let customerForm: Record<string, string> = { name: '', gender: 'unknown', address: '', phone: '', birth_day: '', facebook: '', lead_source: '', status: '', note: '' };
+  let pendingCustomerImages: File[] = [];
+  let customerSegment = 'all';
   let carSegment = 'all';
   let selectedId = '';
   let filter = '';
@@ -88,7 +91,7 @@
 
   function go(path: string) { window.location.hash = `#${path}`; }
   function syncDraftText() { draftText = JSON.stringify(draft, null, 2); }
-  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); pendingCarImages = []; syncDraftText(); }
+  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); customerForm = toCustomerForm(); pendingCarImages = []; pendingCustomerImages = []; syncDraftText(); }
 
   async function guarded<T>(fn: () => Promise<T>) {
     try {
@@ -195,6 +198,7 @@
     draft = { ...detail };
     if (module === 'users') userForm = toUserForm(detail);
     if (module === 'cars') carForm = toCarForm(detail);
+    if (module === 'customers') customerForm = toCustomerForm(detail);
     syncDraftText();
   }
 
@@ -300,6 +304,35 @@
       pendingCarImages = [];
     }
   }
+  function customerSegmentation() {
+    const customers = records.customers ?? [];
+    const activeCustomers = customers.filter((c) => Array.isArray((c as any).transactions) && (c as any).transactions.length > 0);
+    return { customers, activeCustomers, leads: customers.length - activeCustomers.length };
+  }
+  function toCustomerForm(input: Partial<ModuleRecord> = {}) {
+    return {
+      name: String(input.name ?? ''),
+      gender: String(input.gender ?? 'unknown') || 'unknown',
+      address: String(input.address ?? ''),
+      phone: String(input.phone ?? ''),
+      birth_day: String(input.birth_day ?? ''),
+      facebook: String(input.facebook ?? ''),
+      lead_source: String(input.lead_source ?? ''),
+      status: String(input.status ?? ''),
+      note: String(input.note ?? '')
+    };
+  }
+  function syncCustomerDraftFromForm() { draft = { ...draft, ...customerForm }; }
+  async function saveCustomerRecord() {
+    if (!customerForm.name.trim()) { error = 'Name is required'; return; }
+    syncCustomerDraftFromForm();
+    await saveRecord('customers');
+    if (pendingCustomerImages.length > 0) {
+      for (const file of pendingCustomerImages) await uploadImage({ module: 'customers', file });
+      pendingCustomerImages = [];
+    }
+  }
+
 
   async function bootstrapAdmin(module: ModuleKey) { clearEditor(); page = 1; await loadModule(module); syncDraftText(); }
 
@@ -314,6 +347,7 @@
       if (route.kind === 'module-detail') {
         await selectRecord(route.module, route.id);
         if (route.module === 'cars') carForm = toCarForm(draft);
+        if (route.module === 'customers') customerForm = toCustomerForm(draft);
       }
     }
     if (route.kind === 'search') await runGlobalSearch();
@@ -466,6 +500,30 @@
                 <button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button>
               </div>
             </div>
+          {:else if activeModule === 'customers'}
+            {@const custSeg = customerSegmentation()}
+            <div class="row g-3 mb-3">
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Customers</p><h4 class="mb-0">{custSeg.customers.length}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Active Customers</p><h4 class="mb-0">{custSeg.activeCustomers.length}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Potential Leads</p><h4 class="mb-0">{custSeg.leads}</h4></div></div></div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-sm {customerSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => customerSegment='all'}>All ({custSeg.customers.length})</button>
+              <button class="btn btn-sm {customerSegment==='active'?'btn-primary':'btn-outline-primary'}" onclick={() => customerSegment='active'}>Active ({custSeg.activeCustomers.length})</button>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={customerForm.name} /></div>
+              <div class="col-md-6"><label class="form-label">Gender</label><select class="form-select" bind:value={customerForm.gender}><option value="unknown">Unknown</option><option value="male">Male</option><option value="female">Female</option></select></div>
+              <div class="col-md-12"><label class="form-label">Address</label><input class="form-control" bind:value={customerForm.address} /></div>
+              <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" bind:value={customerForm.phone} /></div>
+              <div class="col-md-6"><label class="form-label">Birthday</label><input class="form-control" bind:value={customerForm.birth_day} placeholder="YYYY-MM-DD" /></div>
+              <div class="col-md-6"><label class="form-label">Facebook</label><input class="form-control" bind:value={customerForm.facebook} /></div>
+              <div class="col-md-6"><label class="form-label">Lead Source</label><input class="form-control" bind:value={customerForm.lead_source} /></div>
+              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={customerForm.status}><option value="">Customer status</option><option value="paid">Paid</option><option value="wait2pay">Wait to pay</option></select></div>
+              <div class="col-md-12"><label class="form-label">Note</label><textarea rows="3" class="form-control" bind:value={customerForm.note}></textarea></div>
+              <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCustomerImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCustomerImages.length}</small></div>
+              <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={saveCustomerRecord}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>{#if route.kind === 'module-detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?customer_id=${selectedId || route.id}`)}>Add Purchase</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
+            </div>
           {:else}
           <div class="row g-3 mb-3">
             <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
@@ -484,7 +542,8 @@
       {#if activeModule === 'cars' || activeModule === 'customers'}
         <UploadForm onUpload={uploadImage} t={tt} />
       {/if}
-      {@const view = activeModule === 'cars' ? { total: visibleCarsBySegment().length, items: visibleCarsBySegment().slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize) } : visibleItems(activeModule)}
+      {@const customerItems = customerSegment === 'active' ? customerSegmentation().activeCustomers : customerSegmentation().customers}
+      {@const view = activeModule === 'cars' ? { total: visibleCarsBySegment().length, items: visibleCarsBySegment().slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize) } : activeModule === 'customers' ? { total: customerItems.length, items: customerItems.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize) } : visibleItems(activeModule)}
       <ModuleTable title={activeModule} items={view.items} total={view.total} page={page} pageSize={pageSize} onDetail={(id) => selectRecord(activeModule, id)} onDelete={(id) => removeRecord(activeModule, id)} t={tt} />
       <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
         <button class="btn btn-outline-secondary btn-sm" disabled={page<=1} onclick={() => page = page - 1}>{tt('prev')}</button>
