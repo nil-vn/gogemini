@@ -70,6 +70,39 @@ func queryList[T any](db *sql.DB, q string, args []any, scan func(*sql.Rows) (T,
 	return out, rows.Err()
 }
 
+func (r AdminRepo) listTransactionItems(transactionID int64) ([]domain.TransactionItem, error) {
+	rows, err := r.DB.Query("SELECT id, transaction_id, COALESCE(name,''), COALESCE(price,0) FROM transaction_item WHERE transaction_id=? ORDER BY id ASC", transactionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []domain.TransactionItem{}
+	for rows.Next() {
+		var item domain.TransactionItem
+		if err := rows.Scan(&item.ID, &item.TransactionID, &item.Name, &item.Price); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+func syncTransactionItems(tx *sql.Tx, transactionID int64, items []domain.TransactionItem) error {
+	if _, err := tx.Exec("DELETE FROM transaction_item WHERE transaction_id=?", transactionID); err != nil {
+		return err
+	}
+	for _, item := range items {
+		name := strings.TrimSpace(item.Name)
+		if name == "" {
+			continue
+		}
+		if _, err := tx.Exec("INSERT INTO transaction_item (transaction_id, name, price) VALUES (?, ?, ?)", transactionID, name, item.Price); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (r AdminRepo) ListUsers(q ListQuery) (ListResult[domain.User], error) {
 	page, pageSize, sortCol, order := normalizeListQuery(q, map[string]string{"id": "id", "username": "username", "email": "email", "status": "status"})
 	needle := "%" + strings.TrimSpace(q.Search) + "%"
@@ -157,7 +190,15 @@ func (r AdminRepo) GetCustomer(id int64) (domain.Customer, error) {
 func (r AdminRepo) GetTransaction(id int64) (domain.Transaction, error) {
 	var v domain.Transaction
 	err := r.DB.QueryRow("SELECT id, COALESCE(customer_id,0), COALESCE(status,''), COALESCE(selling_price,0), COALESCE(purchase_date,'') FROM `transaction` WHERE id=?", id).Scan(&v.ID, &v.CustomerID, &v.Status, &v.SellingPrice, &v.PurchaseDate)
-	return v, err
+	if err != nil {
+		return v, err
+	}
+	items, err := r.listTransactionItems(id)
+	if err != nil {
+		return v, err
+	}
+	v.Items = items
+	return v, nil
 }
 
 func (r AdminRepo) CreateUser(username, role, email, passwordHash, status string) (int64, error) {
@@ -180,8 +221,18 @@ func (r AdminRepo) UpdateCustomer(id int64, in domain.Customer) error {
 	return err
 }
 func (r AdminRepo) UpdateTransaction(id int64, in domain.Transaction) error {
-	_, err := r.DB.Exec("UPDATE `transaction` SET customer_id=?, status=?, selling_price=?, purchase_date=? WHERE id=?", in.CustomerID, in.Status, in.SellingPrice, in.PurchaseDate, id)
-	return err
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec("UPDATE `transaction` SET customer_id=?, status=?, selling_price=?, purchase_date=? WHERE id=?", in.CustomerID, in.Status, in.SellingPrice, in.PurchaseDate, id); err != nil {
+		return err
+	}
+	if err := syncTransactionItems(tx, id, in.Items); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 func (r AdminRepo) DeleteByID(table string, id int64) error {
 	if table != "users" && table != "car" && table != "customer" && table != "transaction" {
@@ -209,11 +260,26 @@ func (r AdminRepo) CreateCustomer(in domain.Customer) (int64, error) {
 	return res.LastInsertId()
 }
 func (r AdminRepo) CreateTransaction(in domain.Transaction) (int64, error) {
-	res, err := r.DB.Exec("INSERT INTO `transaction` (customer_id, status, selling_price, purchase_date) VALUES (?, ?, ?, ?)", in.CustomerID, in.Status, in.SellingPrice, in.PurchaseDate)
+	tx, err := r.DB.Begin()
 	if err != nil {
 		return 0, err
 	}
-	return res.LastInsertId()
+	defer tx.Rollback()
+	res, err := tx.Exec("INSERT INTO `transaction` (customer_id, status, selling_price, purchase_date) VALUES (?, ?, ?, ?)", in.CustomerID, in.Status, in.SellingPrice, in.PurchaseDate)
+	if err != nil {
+		return 0, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	if err := syncTransactionItems(tx, id, in.Items); err != nil {
+		return 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 func (r AdminRepo) Dashboard() (map[string]int64, error) {
