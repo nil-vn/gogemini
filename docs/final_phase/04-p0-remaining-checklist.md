@@ -6,7 +6,7 @@ Date: 2026-05-21
 - [x] Dedicated page components created for Users/Cars/Customers/Transactions/Search/NotFound.
 - [ ] Move remaining domain logic out of `App.svelte` into page-level modules/stores.
 - [ ] Remove all generic-form fallback paths from operator primary flow.
-- [ ] Verify each route has page-specific acceptance evidence (list/new/detail).
+- [x] Verify each route has page-specific acceptance evidence (list/new/detail).
 
 ## P0-02 — Remove generic JSON CRUD as default view
 - [x] JSON payload editor is hidden behind debug flag (`VITE_UI_DEBUG_JSON_EDITOR`).

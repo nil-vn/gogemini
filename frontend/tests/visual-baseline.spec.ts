@@ -61,3 +61,32 @@ test('capture WBS-1 visual baseline set', async ({ page }) => {
   await page.locator('textarea').fill('{"login":"visual-user","email":"visual@example.com"}');
   await page.screenshot({ path: out('wbs1-detail-form.png'), fullPage: true });
 });
+
+test('capture P0-01 route acceptance evidence (list/new/detail)', async ({ page }) => {
+  await mountMockApi(page);
+
+  await page.goto('/#/auth/login');
+  await page.getByPlaceholder('username/email').fill('admin');
+  await page.getByPlaceholder('password').fill('secret');
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  const routes = [
+    { path: '/#/admin/users', file: 'p0-01-users-list.png' },
+    { path: '/#/admin/user/new', file: 'p0-01-users-new.png' },
+    { path: '/#/admin/user/u-1', file: 'p0-01-users-detail.png' },
+    { path: '/#/admin/cars', file: 'p0-01-cars-list.png' },
+    { path: '/#/admin/car/new', file: 'p0-01-cars-new.png' },
+    { path: '/#/admin/car/c-1', file: 'p0-01-cars-detail.png' },
+    { path: '/#/admin/customers', file: 'p0-01-customers-list.png' },
+    { path: '/#/admin/customer/new', file: 'p0-01-customers-new.png' },
+    { path: '/#/admin/customer/cu-1', file: 'p0-01-customers-detail.png' },
+    { path: '/#/admin/transactions', file: 'p0-01-transactions-list.png' },
+    { path: '/#/admin/transaction/new', file: 'p0-01-transactions-new.png' },
+    { path: '/#/admin/transaction/t-1', file: 'p0-01-transactions-detail.png' }
+  ];
+
+  for (const route of routes) {
+    await page.goto(route.path);
+    await page.screenshot({ path: out(route.file), fullPage: true });
+  }
+});

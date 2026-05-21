@@ -34,7 +34,7 @@ Tách `frontend/src/App.svelte` thành page-level modules:
 - Không còn một page generic gánh mọi module primary flow.
 
 ### Evidence log template
-- [ ] Screenshot từng page list/new/detail.
+- [x] Screenshot từng page list/new/detail. _(Evidence: `frontend/tests/visual-baseline.spec.ts` → `tests/baseline/p0-01-*.png`)_
 - [ ] Route matrix pass.
 - [ ] Reviewer sign-off FE lead.
 
@@ -161,4 +161,3 @@ Tách `frontend/src/App.svelte` thành page-level modules:
 | Date | Task ID | Owner | Status | Risks | Evidence Link | Next Action |
 |---|---|---|---|---|---|---|
 | 2026-05-21 | P0-05 | TBD | In progress | Status mapping divergence | TBD | Align enum mapping |
-
