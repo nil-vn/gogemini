@@ -1,0 +1,106 @@
+
+/* iOS Style Switch for Theme Mode */
+.ios-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 5px 0;
+}
+
+.ios-switch-label {
+    font-weight: 500;
+    color: var(--pc-heading-color);
+    margin-bottom: 0;
+}
+
+.ios-switch {
+    position: relative;
+    display: inline-block;
+    width: 58px;
+    height: 31px;
+}
+
+.ios-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ios-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e9e9eb;
+    transition: .4s cubic-bezier(0.25, 1, 0.5, 1);
+    border-radius: 31px;
+    box-shadow: inset 0 0 1px rgba(0,0,0,0.1);
+}
+
+.ios-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 27px;
+    width: 27px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s cubic-bezier(0.25, 1, 0.5, 1);
+    border-radius: 50%;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.05);
+    z-index: 2;
+}
+
+/* Icons inside the switch */
+.ios-switch-slider .switch-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    transition: .3s;
+    z-index: 1;
+}
+
+.ios-switch-slider .icon-sun {
+    right: 8px;
+    color: #8e8e93;
+    opacity: 1;
+}
+
+.ios-switch-slider .icon-moon {
+    left: 8px;
+    color: #fff;
+    opacity: 0;
+}
+
+.ios-switch input:checked + .ios-switch-slider {
+    background-color: #34c759;
+}
+
+.ios-switch input:checked + .ios-switch-slider:before {
+    transform: translateX(27px);
+}
+
+.ios-switch input:checked + .ios-switch-slider .icon-sun {
+    opacity: 0;
+}
+
+.ios-switch input:checked + .ios-switch-slider .icon-moon {
+    opacity: 1;
+}
+
+[data-bs-theme="dark"] .ios-switch-slider {
+    background-color: #39393d;
+}
+
+/* Theme switch premium glow */
+.ios-switch input:checked + .ios-switch-slider {
+    box-shadow: 0 0 10px rgba(52, 199, 89, 0.3);
+}
+
+/* Theme Customizer Button - Hidden as per requirements */
+.pct-c-btn-modern {
+    display: none !important;
+}
