@@ -14,9 +14,14 @@
   import NoticeStack from './components/ui/NoticeStack.svelte';
   import ContentState from './components/ui/ContentState.svelte';
   import SectionCard from './components/ui/SectionCard.svelte';
+  import UsersPage from './pages/admin/UsersPage.svelte';
+  import TransactionsPage from './pages/admin/TransactionsPage.svelte';
+  import CarsPage from './pages/admin/CarsPage.svelte';
+  import CustomersPage from './pages/admin/CustomersPage.svelte';
+  import SearchPage from './pages/admin/SearchPage.svelte';
+  import NotFoundPage from './pages/admin/NotFoundPage.svelte';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
-  const moduleSet = new Set<ModuleKey>(modules);
 
   const legacyFallbackUrl = import.meta.env.VITE_UI_FALLBACK_LEGACY_URL ?? '';
   const forceLegacyFallback = String(import.meta.env.VITE_UI_ROLLBACK_FORCE_LEGACY ?? 'false').toLowerCase() === 'true';
@@ -28,9 +33,18 @@
     | { kind: 'dashboard' }
     | { kind: 'settings' }
     | { kind: 'search' }
-    | { kind: 'module-list'; module: ModuleKey }
-    | { kind: 'module-new'; module: ModuleKey }
-    | { kind: 'module-detail'; module: ModuleKey; id: string }
+    | { kind: 'users-list' }
+    | { kind: 'users-new' }
+    | { kind: 'users-detail'; id: string }
+    | { kind: 'cars-list' }
+    | { kind: 'cars-new' }
+    | { kind: 'cars-detail'; id: string }
+    | { kind: 'customers-list' }
+    | { kind: 'customers-new' }
+    | { kind: 'customers-detail'; id: string }
+    | { kind: 'transactions-list' }
+    | { kind: 'transactions-new' }
+    | { kind: 'transactions-detail'; id: string }
     | { kind: 'not-found'; path: string };
 
   let route: AppRoute = { kind: 'home' };
@@ -60,16 +74,17 @@
   let isLoading = false;
   let lastAction: (() => Promise<unknown>) | null = null;
   let isAuthenticated = false;
-  $: activeModule = route.kind === 'module-list' || route.kind === 'module-new' || route.kind === 'module-detail' ? route.module : 'users';
+  $: activeModule =
+    route.kind.startsWith('users-') ? 'users' :
+    route.kind.startsWith('cars-') ? 'cars' :
+    route.kind.startsWith('customers-') ? 'customers' :
+    route.kind.startsWith('transactions-') ? 'transactions' :
+    'users';
+  $: routeMode = route.kind.endsWith('-new') ? 'new' : route.kind.endsWith('-detail') ? 'detail' : 'list';
 
+  function currentRouteId() { return routeMode === 'detail' && 'id' in route ? route.id : ''; }
   function tt(key: string, vars: Record<string, string | number> = {}) { return get(tStore)(key, vars); }
 
-  const singularRouteToModule: Record<string, ModuleKey> = {
-    user: 'users',
-    car: 'cars',
-    customer: 'customers',
-    transaction: 'transactions'
-  };
 
   function parseRoute(hash: string): AppRoute {
     const raw = hash.replace('#', '') || '/';
@@ -79,18 +94,18 @@
     if (normalized === '/admin' || normalized === '/admin/dashboard') return { kind: 'dashboard' };
     if (normalized === '/admin/system') return { kind: 'settings' };
     if (normalized === '/admin/search') return { kind: 'search' };
-    if (normalized.startsWith('/admin/')) {
-      const segments = normalized.split('/').filter(Boolean);
-      const moduleList = segments[1] as ModuleKey | undefined;
-      if (moduleList && moduleSet.has(moduleList) && segments.length === 2) return { kind: 'module-list', module: moduleList };
-
-      const singular = segments[1];
-      const mappedModule = singularRouteToModule[singular];
-      if (!mappedModule) return { kind: 'not-found', path: normalized };
-      if (segments.length === 3 && segments[2] === 'new') return { kind: 'module-new', module: mappedModule };
-      if (segments.length === 3 && segments[2]) return { kind: 'module-detail', module: mappedModule, id: decodeURIComponent(segments[2]) };
-      return { kind: 'not-found', path: normalized };
-    }
+    if (normalized === '/admin/users') return { kind: 'users-list' };
+    if (normalized === '/admin/user/new') return { kind: 'users-new' };
+    if (normalized.startsWith('/admin/user/')) return { kind: 'users-detail', id: decodeURIComponent(normalized.split('/').pop() || '') };
+    if (normalized === '/admin/cars') return { kind: 'cars-list' };
+    if (normalized === '/admin/car/new') return { kind: 'cars-new' };
+    if (normalized.startsWith('/admin/car/')) return { kind: 'cars-detail', id: decodeURIComponent(normalized.split('/').pop() || '') };
+    if (normalized === '/admin/customers') return { kind: 'customers-list' };
+    if (normalized === '/admin/customer/new') return { kind: 'customers-new' };
+    if (normalized.startsWith('/admin/customer/')) return { kind: 'customers-detail', id: decodeURIComponent(normalized.split('/').pop() || '') };
+    if (normalized === '/admin/transactions') return { kind: 'transactions-list' };
+    if (normalized === '/admin/transaction/new') return { kind: 'transactions-new' };
+    if (normalized.startsWith('/admin/transaction/')) return { kind: 'transactions-detail', id: decodeURIComponent(normalized.split('/').pop() || '') };
     return normalized === '/' ? { kind: 'home' } : { kind: 'not-found', path: normalized };
   }
 
@@ -391,18 +406,18 @@
 
   async function syncRoute() {
     route = parseRoute(window.location.hash);
-    if (route.kind !== 'module-list' && route.kind !== 'module-new' && route.kind !== 'module-detail' && route.kind !== 'dashboard' && route.kind !== 'settings' && route.kind !== 'search') return;
+    if (!(route.kind.endsWith('-list') || route.kind.endsWith('-new') || route.kind.endsWith('-detail') || route.kind === 'dashboard' || route.kind === 'settings' || route.kind === 'search')) return;
     const authed = isAuthenticated || await checkAuth();
     if (!authed) { go('/auth/login'); return; }
     if (route.kind === 'dashboard') await bootstrapDashboard();
-    if (route.kind === 'module-list' || route.kind === 'module-new' || route.kind === 'module-detail') {
-      await bootstrapAdmin(route.module);
-      if (route.kind === 'module-detail') {
-        await selectRecord(route.module, route.id);
-        if (route.module === 'cars') carForm = toCarForm(draft);
-        if (route.module === 'customers') customerForm = toCustomerForm(draft);
+    if (route.kind.endsWith('-list') || route.kind.endsWith('-new') || route.kind.endsWith('-detail')) {
+      await bootstrapAdmin(activeModule);
+      if (route.kind.endsWith('-detail')) {
+        await selectRecord(activeModule, currentRouteId());
+        if (activeModule === 'cars') carForm = toCarForm(draft);
+        if (activeModule === 'customers') customerForm = toCustomerForm(draft);
       }
-      if (route.module === 'transactions' && route.kind === 'module-new') applyTransactionPrefill();
+      if (activeModule === 'transactions' && route.kind === 'transactions-new') applyTransactionPrefill();
     }
     if (route.kind === 'search') await runGlobalSearch();
     if (route.kind === 'settings') await loadSettings();
@@ -426,9 +441,9 @@
   <h1 class="d-none">{tt('appTitle')}</h1>
   {#if route.kind === 'login'}
     <LoginForm onSubmit={login} t={tt} />
-  {:else if route.kind === 'dashboard' || route.kind === 'module-list' || route.kind === 'module-new' || route.kind === 'module-detail' || route.kind === 'settings' || route.kind === 'search'}
+  {:else if route.kind === 'dashboard' || route.kind.endsWith('-list') || route.kind.endsWith('-new') || route.kind.endsWith('-detail') || route.kind === 'settings' || route.kind === 'search'}
     <AdminLayout
-      activePath={route.kind === 'dashboard' ? '/admin/dashboard' : route.kind === 'settings' ? '/admin/system' : route.kind === 'search' ? '/admin/search' : `/admin/${route.module}`}
+      activePath={route.kind === 'dashboard' ? '/admin/dashboard' : route.kind === 'settings' ? '/admin/system' : route.kind === 'search' ? '/admin/search' : `/admin/${activeModule}`}
       {globalSearchTerm}
       onNavigate={go}
       onSearch={runGlobalSearch}
@@ -480,132 +495,29 @@
     {:else if route.kind === 'search'}
       <SectionCard title="Search" subtitle="Dedicated search workflow parity at /admin/search">
         <p class="text-muted mb-2">Dedicated search page parity route: <code>/admin/search</code></p>
-        <div class="d-flex gap-2">
-          <input class="form-control" bind:value={globalSearchTerm} placeholder="Search across modules..." />
-          <button class="btn btn-primary" onclick={runGlobalSearch}>Run Search</button>
-        </div>
+        <SearchPage {globalSearchTerm} setGlobalSearchTerm={(v)=>globalSearchTerm=v} {runGlobalSearch} />
       </SectionCard>
-    {:else if route.kind === 'module-list' || route.kind === 'module-new' || route.kind === 'module-detail'}
+    {:else if route.kind.endsWith('-list') || route.kind.endsWith('-new') || route.kind.endsWith('-detail')}
       <SectionCard title={tt('managementTitle', { module: activeModule })} subtitle="Shared form + table density parity" actions={true}>
           <div slot="actions" class="d-flex gap-2">
             <button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule}`)}>List</button>
             <button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule.slice(0, -1)}/new`)}>New</button>
             {#if selectedId}<button class="btn btn-sm btn-outline-primary" onclick={() => go(`/admin/${activeModule.slice(0, -1)}/${selectedId}`)}>Detail</button>{/if}
           </div>
-                    {#if route.kind === 'module-new'}
+                    {#if routeMode==='new'}
             <p class="text-muted">Create route active: <code>/admin/{activeModule.slice(0, -1)}/new</code></p>
           {/if}
-          {#if route.kind === 'module-detail'}
-            <p class="text-muted">Detail route active for ID <strong>{route.id}</strong>.</p>
+          {#if routeMode==='detail'}
+            <p class="text-muted">Detail route active for ID <strong>{currentRouteId()}</strong>.</p>
           {/if}
           {#if activeModule === 'users'}
-            {@const seg = userSegmentation()}
-            <div class="row g-3 mb-3">
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Users</p><h4 class="mb-0">{seg.users.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Admin Users</p><h4 class="mb-0">{seg.adminUsers.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Staff/Members</p><h4 class="mb-0">{seg.staffUsers.length}</h4></div></div></div>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6"><label class="form-label">Username *</label><input class="form-control" bind:value={userForm.username} /></div>
-              <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" bind:value={userForm.email} /></div>
-              <div class="col-md-6"><label class="form-label">Password</label><input type="text" class="form-control" bind:value={userForm.password} placeholder={route.kind==='module-detail'?'******':''} /></div>
-              <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="text" class="form-control" bind:value={userForm.confirm_password} /></div>
-              <div class="col-md-6"><label class="form-label">Role</label><select class="form-select" bind:value={userForm.role}><option value="guest">Guest</option><option value="admin">Admin</option></select></div>
-              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={userForm.status}><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
-              <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={async () => { const e = validateUserForm(route.kind==='module-detail'); if (e) { error = e; return; } syncUserDraftFromForm(); await saveRecord('users'); }}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button><button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
-            </div>
+            <UsersPage {routeMode} {userForm} {validateUserForm} {syncUserDraftFromForm} {saveRecord} {clearEditor} {userSegmentation} tt={tt} />
           {:else if activeModule === 'cars'}
-            {@const cseg = carSegmentation()}
-            <div class="row g-3 mb-3">
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Cars</p><h4 class="mb-0">{cseg.cars.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Available (inc. Awaiting)</p><h4 class="mb-0">{cseg.available.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Sold Cars</p><h4 class="mb-0">{cseg.sold.length}</h4></div></div></div>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <button class="btn btn-sm {carSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='all'}>All ({cseg.cars.length})</button>
-              <button class="btn btn-sm {carSegment==='available'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='available'}>Available ({cseg.available.length})</button>
-              <button class="btn btn-sm {carSegment==='awaiting'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='awaiting'}>Awaiting ({cseg.awaiting.length})</button>
-              <button class="btn btn-sm {carSegment==='sold'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='sold'}>Sold ({cseg.sold.length})</button>
-              <button class="btn btn-sm {carSegment==='refurbished'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='refurbished'}>Refurbished ({cseg.refurbished.length})</button>
-              <button class="btn btn-sm {carSegment==='not_refurbished'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='not_refurbished'}>Not Refurbished ({cseg.notRefurbished.length})</button>
-              <button class="btn btn-sm {carSegment==='refurbished_pending'?'btn-primary':'btn-outline-primary'}" onclick={() => carSegment='refurbished_pending'}>Refurbished/Pending ({cseg.refurbishedPending.length})</button>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={carForm.name} /></div>
-              <div class="col-md-6"><label class="form-label">Model</label><input class="form-control" bind:value={carForm.model} /></div>
-              <div class="col-md-6"><label class="form-label">Year Of Manufacture</label><input class="form-control" bind:value={carForm.year_of_manufacture} /></div>
-              <div class="col-md-6"><label class="form-label">VIN</label><input class="form-control" bind:value={carForm.vin} /></div>
-              <div class="col-md-6"><label class="form-label">Imported Date</label><input class="form-control" bind:value={carForm.imported_date} placeholder="YYYY-MM-DD" /></div>
-              <div class="col-md-6"><label class="form-label">Purchase Price</label><input class="form-control" bind:value={carForm.purchase_price} /></div>
-              <div class="col-md-6"><label class="form-label">Inspection From</label><input class="form-control" bind:value={carForm.inspection_from} /></div>
-              <div class="col-md-6"><label class="form-label">Inspection To</label><input class="form-control" bind:value={carForm.inspection_to} /></div>
-              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={carForm.status}><option value="AVAILABLE">Available</option><option value="AWAITING_DELIVERY">Awaiting Delivery</option><option value="SOLD">Sold</option></select></div>
-              <div class="col-md-6"><label class="form-label">Situation</label><select class="form-select" bind:value={carForm.car_situation}><option value="REFURBISHED">Refurbished</option><option value="NOT_REFURBISHED">Not Refurbished</option><option value="REFURBISHED_PENDING_CLEANING">Refurbished Pending Cleaning</option></select></div>
-              <div class="col-md-6"><label class="form-label">Color</label><input class="form-control" bind:value={carForm.color} /></div>
-              <div class="col-md-6"><label class="form-label">Branch</label><input class="form-control" bind:value={carForm.branch} /></div>
-              <div class="col-md-6"><label class="form-label">License Plate</label><input class="form-control" bind:value={carForm.license_plate_no} /></div>
-              <div class="col-md-6"><label class="form-label">Traded Company</label><input class="form-control" bind:value={carForm.traded_company} /></div>
-              <div class="col-md-6"><label class="form-label">Expected Selling Price</label><input class="form-control" bind:value={carForm.selling_price} /></div>
-              <div class="col-md-12"><label class="form-label">Note</label><textarea class="form-control" rows="3" bind:value={carForm.note}></textarea></div>
-              <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCarImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCarImages.length}</small></div>
-              <div class="col-md-12 d-flex gap-2">
-                <button class="btn btn-primary" onclick={saveCarRecord}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>
-                {#if route.kind === 'module-detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?car_id=${selectedId || route.id}`)}>Add Customer Purchase</button>{/if}
-                <button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button>
-              </div>
-            </div>
+            <CarsPage {routeMode} {carForm} {carSegmentation} {carSegment} setCarSegment={(v)=>carSegment=v} {pendingCarImages} setPendingCarImages={(v)=>pendingCarImages=v} {saveCarRecord} {clearEditor} {go} {selectedId} {currentRouteId} tt={tt} />
           {:else if activeModule === 'customers'}
-            {@const custSeg = customerSegmentation()}
-            <div class="row g-3 mb-3">
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Customers</p><h4 class="mb-0">{custSeg.customers.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Active Customers</p><h4 class="mb-0">{custSeg.activeCustomers.length}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Potential Leads</p><h4 class="mb-0">{custSeg.leads}</h4></div></div></div>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <button class="btn btn-sm {customerSegment==='all'?'btn-primary':'btn-outline-primary'}" onclick={() => customerSegment='all'}>All ({custSeg.customers.length})</button>
-              <button class="btn btn-sm {customerSegment==='active'?'btn-primary':'btn-outline-primary'}" onclick={() => customerSegment='active'}>Active ({custSeg.activeCustomers.length})</button>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6"><label class="form-label">Name *</label><input class="form-control" bind:value={customerForm.name} /></div>
-              <div class="col-md-6"><label class="form-label">Gender</label><select class="form-select" bind:value={customerForm.gender}><option value="unknown">Unknown</option><option value="male">Male</option><option value="female">Female</option></select></div>
-              <div class="col-md-12"><label class="form-label">Address</label><input class="form-control" bind:value={customerForm.address} /></div>
-              <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" bind:value={customerForm.phone} /></div>
-              <div class="col-md-6"><label class="form-label">Birthday</label><input class="form-control" bind:value={customerForm.birth_day} placeholder="YYYY-MM-DD" /></div>
-              <div class="col-md-6"><label class="form-label">Facebook</label><input class="form-control" bind:value={customerForm.facebook} /></div>
-              <div class="col-md-6"><label class="form-label">Lead Source</label><input class="form-control" bind:value={customerForm.lead_source} /></div>
-              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={customerForm.status}><option value="">Customer status</option><option value="paid">Paid</option><option value="wait2pay">Wait to pay</option></select></div>
-              <div class="col-md-12"><label class="form-label">Note</label><textarea rows="3" class="form-control" bind:value={customerForm.note}></textarea></div>
-              <div class="col-md-12"><label class="form-label">Images (multi upload)</label><input multiple type="file" class="form-control" accept="image/*" onchange={(e) => pendingCustomerImages = Array.from((e.currentTarget as HTMLInputElement).files ?? [])} /><small class="text-muted">Selected: {pendingCustomerImages.length}</small></div>
-              <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={saveCustomerRecord}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>{#if route.kind === 'module-detail'}<button class="btn btn-outline-success" onclick={() => go(`/admin/transaction/new?customer_id=${selectedId || route.id}`)}>Add Purchase</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
-            </div>
+            <CustomersPage {routeMode} {customerForm} {customerSegmentation} {customerSegment} setCustomerSegment={(v)=>customerSegment=v} {pendingCustomerImages} setPendingCustomerImages={(v)=>pendingCustomerImages=v} {saveCustomerRecord} {clearEditor} {go} {selectedId} {currentRouteId} tt={tt} />
           {:else if activeModule === 'transactions'}
-            {@const txSum = transactionSummary()}
-            {@const txGroup = transactionStatusGroups()}
-            <div class="row g-3 mb-3">
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Revenue</p><h4 class="mb-0">{txSum.totalRevenue.toLocaleString()}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Paid Revenue</p><h4 class="mb-0">{txSum.paidRevenue.toLocaleString()}</h4></div></div></div>
-              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Deposited Amount</p><h4 class="mb-0">{txSum.depositedAmount.toLocaleString()}</h4></div></div></div>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <button class="btn btn-sm {filter==='tx_all'?'btn-primary':'btn-outline-primary'}" onclick={() => filter='tx_all'}>All ({txGroup.all.length})</button>
-              <button class="btn btn-sm {filter==='tx_deposited'?'btn-primary':'btn-outline-primary'}" onclick={() => filter='tx_deposited'}>Deposited ({txGroup.deposited.length})</button>
-              <button class="btn btn-sm {filter==='tx_paid'?'btn-primary':'btn-outline-primary'}" onclick={() => filter='tx_paid'}>Paid ({txGroup.paid.length})</button>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6"><label class="form-label">Customer ID *</label><input class="form-control" bind:value={transactionForm.customer_id} /></div>
-              <div class="col-md-6"><label class="form-label">Car ID *</label><input class="form-control" bind:value={transactionForm.car_id} /></div>
-              <div class="col-md-6"><label class="form-label">Purchase Date</label><input class="form-control" bind:value={transactionForm.purchase_date} placeholder="YYYY-MM-DD" /></div>
-              <div class="col-md-6"><label class="form-label">Selling Price</label><input class="form-control" bind:value={transactionForm.selling_price} /></div>
-              <div class="col-md-6"><label class="form-label">Deposit Amount</label><input class="form-control" bind:value={transactionForm.deposit_amount} /></div>
-              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={transactionForm.status}><option value="">Customer status</option><option value="paid">Paid</option><option value="deposited">Deposited</option><option value="wait2pay">Wait to pay</option></select></div>
-              <div class="col-md-12"><label class="form-label">Note</label><textarea rows="3" class="form-control" bind:value={transactionForm.note}></textarea></div>
-              <div class="col-md-12">
-                <h6>Other Transactions (Accessories/Services)</h6>
-                <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Accessory/Service Name</th><th>Price</th><th></th></tr></thead><tbody>{#each transactionItems as item, idx}<tr><td><input class="form-control" bind:value={item.name} /></td><td><input class="form-control" bind:value={item.price} /></td><td><button class="btn btn-sm btn-danger" onclick={() => removeTransactionItem(idx)}>Remove</button></td></tr>{/each}</tbody></table></div>
-                <button class="btn btn-sm btn-primary" onclick={addTransactionItem}>+ Add Item</button>
-              </div>
-              <div class="col-md-12 d-flex flex-wrap gap-2"><button class="btn btn-primary" onclick={async () => { if (!transactionForm.customer_id || !transactionForm.car_id) { error = 'Customer and Car are required'; return; } syncTransactionDraftFromForm(); await saveRecord('transactions'); }}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button>{#if route.kind==='module-detail'}<button class="btn btn-outline-success" onclick={async () => { transactionForm.status='paid'; syncTransactionDraftFromForm(); await saveRecord('transactions'); }}>Mark as Paid</button><button class="btn btn-outline-warning" onclick={async () => { transactionForm.status='deposited'; syncTransactionDraftFromForm(); await saveRecord('transactions'); }}>Mark as Deposited</button>{/if}<button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
-            </div>
+            <TransactionsPage {routeMode} {transactionForm} {transactionItems} setError={(v) => error = v} {syncTransactionDraftFromForm} {saveRecord} {clearEditor} {addTransactionItem} {removeTransactionItem} {transactionSummary} {transactionStatusGroups} {filter} setFilter={(v) => filter = v} tt={tt} />
           {:else}
           <div class="row g-3 mb-3">
             <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
