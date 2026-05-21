@@ -20,6 +20,7 @@
 
   const legacyFallbackUrl = import.meta.env.VITE_UI_FALLBACK_LEGACY_URL ?? '';
   const forceLegacyFallback = String(import.meta.env.VITE_UI_ROLLBACK_FORCE_LEGACY ?? 'false').toLowerCase() === 'true';
+  const showJsonDebugEditor = String(import.meta.env.VITE_UI_DEBUG_JSON_EDITOR ?? 'false').toLowerCase() === 'true';
 
   type AppRoute =
     | { kind: 'home' }
@@ -71,7 +72,9 @@
   };
 
   function parseRoute(hash: string): AppRoute {
-    const normalized = (hash.replace('#', '') || '/').replace(/\/+$/, '') || '/';
+    const raw = hash.replace('#', '') || '/';
+    const [pathPart] = raw.split('?');
+    const normalized = pathPart.replace(/\/+$/, '') || '/';
     if (normalized === '/auth/login') return { kind: 'login' };
     if (normalized === '/admin' || normalized === '/admin/dashboard') return { kind: 'dashboard' };
     if (normalized === '/admin/system') return { kind: 'settings' };
@@ -446,7 +449,7 @@
                 {#if (searchResults[module]?.length ?? 0) > 0}
                   <ul class="mb-0 ps-3">
                     {#each searchResults[module].slice(0, 3) as result}
-                      <li>{String(result.id ?? '-')} - {JSON.stringify(result).slice(0, 80)}...</li>
+                      <li><a href={`#/admin/${module === 'users' ? 'user' : module === 'cars' ? 'car' : module === 'customers' ? 'customer' : 'transaction'}/${result.id}`}>{String(result.id ?? '-')}</a> - {JSON.stringify(result).slice(0, 80)}...</li>
                     {/each}
                   </ul>
                 {/if}
@@ -608,13 +611,16 @@
             <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
             <div class="col-md-3"><label class="form-label" for="sort-input">{tt('sortById')}</label><select id="sort-input" class="form-select" bind:value={sort}><option value="asc">asc</option><option value="desc">desc</option></select></div>
             <div class="col-md-5 d-flex align-items-end gap-2"><button class="btn btn-primary" onclick={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button><button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
-            <div class="col-12"><label class="form-label" for="draft-json">JSON payload</label><textarea id="draft-json" class="form-control" rows="8" bind:value={draftText} onchange={() => {
-              try {
-                draft = JSON.parse(draftText);
-              } catch (parseError) {
-                error = (parseError as Error).message;
-              }
-            }}></textarea></div>
+            {#if showJsonDebugEditor}
+              <div class="col-12"><label class="form-label" for="draft-json">JSON payload (debug only)</label><textarea id="draft-json" class="form-control" rows="8" bind:value={draftText} onchange={() => {
+                try {
+                  draft = JSON.parse(draftText);
+                  error = '';
+                } catch (parseError) {
+                  error = (parseError as Error).message;
+                }
+              }}></textarea></div>
+            {/if}
           </div>
           {/if}
       </SectionCard>

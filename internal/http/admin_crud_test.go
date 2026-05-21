@@ -28,6 +28,7 @@ func setupAdminTestDB(t *testing.T) *sql.DB {
 		`CREATE TABLE car (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, branch TEXT, model TEXT, vin TEXT, status TEXT, car_situation TEXT, selling_price INTEGER);`,
 		`CREATE TABLE customer (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, address TEXT, status TEXT);`,
 		"CREATE TABLE `transaction` (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER, status TEXT, selling_price INTEGER, purchase_date TEXT, note TEXT, created_at DATETIME);",
+		`CREATE TABLE transaction_item (id INTEGER PRIMARY KEY AUTOINCREMENT, transaction_id INTEGER NOT NULL, name TEXT NOT NULL, price INTEGER DEFAULT 0);`,
 		`CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT);`,
 		`INSERT INTO users (username, role, email, password_hash, status) VALUES ('admin','admin','a@a.com','pbkdf2:sha256:260000$salt$hash','active');`,
 	}
@@ -332,5 +333,56 @@ func TestAdminUploadAPI(t *testing.T) {
 	r.ServeHTTP(w, makeUploadReq("bad.gif", []byte("GIF89a")))
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected unsupported extension to fail, got=%d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestTransactionItemsCRUDParity(t *testing.T) {
+	db := setupAdminTestDB(t)
+	defer db.Close()
+	r := NewRouter(config.Config{CORSOrigin: "*", AuthSecret: "test-secret", Environment: "test"}, db)
+
+	create := `{"customer_id":1,"status":"new","selling_price":100,"purchase_date":"2026-01-01","items":[{"name":"Dashcam","price":150},{"name":"Tint","price":50}]}`
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodPost, "/api/admin/transactions", []byte(create)))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create code=%d body=%s", w.Code, w.Body.String())
+	}
+	var created map[string]int64
+	_ = json.Unmarshal(w.Body.Bytes(), &created)
+	id := created["id"]
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/transactions/"+itoa(id), nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("detail code=%d body=%s", w.Code, w.Body.String())
+	}
+	var detail map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &detail); err != nil {
+		t.Fatal(err)
+	}
+	items, ok := detail["items"].([]any)
+	if !ok || len(items) != 2 {
+		t.Fatalf("expected 2 transaction items, got %#v", detail["items"])
+	}
+
+	update := `{"customer_id":1,"status":"done","selling_price":200,"purchase_date":"2026-01-02","items":[{"name":"Dashcam","price":180}]}`
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodPut, "/api/admin/transactions/"+itoa(id), []byte(update)))
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("update code=%d body=%s", w.Code, w.Body.String())
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, authedReq(http.MethodGet, "/api/admin/transactions/"+itoa(id), nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("detail2 code=%d body=%s", w.Code, w.Body.String())
+	}
+	detail = map[string]any{}
+	if err := json.Unmarshal(w.Body.Bytes(), &detail); err != nil {
+		t.Fatal(err)
+	}
+	items, ok = detail["items"].([]any)
+	if !ok || len(items) != 1 {
+		t.Fatalf("expected 1 transaction item after update, got %#v", detail["items"])
 	}
 }
