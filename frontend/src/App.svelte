@@ -38,6 +38,7 @@
   let searchResults: Record<ModuleKey, ModuleRecord[]> = { users: [], cars: [], customers: [], transactions: [] };
   let settings: Settings = { currency: 'USD', theme: 'light', language: 'en' };
   let draft: Partial<ModuleRecord> = {};
+  let userForm = { username: '', email: '', password: '', confirm_password: '', role: 'guest', status: 'Active' };
   let selectedId = '';
   let filter = '';
   let globalSearchTerm = '';
@@ -84,7 +85,7 @@
 
   function go(path: string) { window.location.hash = `#${path}`; }
   function syncDraftText() { draftText = JSON.stringify(draft, null, 2); }
-  function clearEditor() { draft = {}; selectedId = ''; syncDraftText(); }
+  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); syncDraftText(); }
 
   async function guarded<T>(fn: () => Promise<T>) {
     try {
@@ -189,7 +190,44 @@
     if (!detail) return;
     selectedId = id;
     draft = { ...detail };
+    if (module === 'users') userForm = toUserForm(detail);
     syncDraftText();
+  }
+
+
+  function toUserForm(input: Partial<ModuleRecord> = {}) {
+    return {
+      username: String(input.username ?? ''),
+      email: String(input.email ?? ''),
+      password: '',
+      confirm_password: '',
+      role: String(input.role ?? 'guest') || 'guest',
+      status: String(input.status ?? 'Active') || 'Active'
+    };
+  }
+
+  function userSegmentation() {
+    const users = records.users ?? [];
+    const adminUsers = users.filter((u) => String(u.role ?? '').toLowerCase() === 'admin');
+    const staffUsers = users.filter((u) => String(u.role ?? '').toLowerCase() !== 'admin');
+    return { users, adminUsers, staffUsers };
+  }
+
+  function syncUserDraftFromForm() {
+    draft = { ...draft, username: userForm.username.trim(), email: userForm.email.trim(), role: userForm.role, status: userForm.status };
+    if (userForm.password.trim()) draft.password = userForm.password;
+    else delete (draft as any).password;
+    draft.name = userForm.username.trim();
+  }
+
+  function validateUserForm(isEdit = false) {
+    if (!userForm.username.trim()) return 'Username is required';
+    if (userForm.password || userForm.confirm_password) {
+      if (userForm.password !== userForm.confirm_password) return 'Password confirmation does not match';
+    } else if (!isEdit) {
+      return 'Password is required for new user';
+    }
+    return '';
   }
 
   function visibleItems(module: ModuleKey) {
@@ -311,6 +349,23 @@
           {#if route.kind === 'module-detail'}
             <p class="text-muted">Detail route active for ID <strong>{route.id}</strong>.</p>
           {/if}
+          {#if activeModule === 'users'}
+            {@const seg = userSegmentation()}
+            <div class="row g-3 mb-3">
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Total Users</p><h4 class="mb-0">{seg.users.length}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Admin Users</p><h4 class="mb-0">{seg.adminUsers.length}</h4></div></div></div>
+              <div class="col-md-4"><div class="card"><div class="card-body"><p class="text-muted mb-1">Staff/Members</p><h4 class="mb-0">{seg.staffUsers.length}</h4></div></div></div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label">Username *</label><input class="form-control" bind:value={userForm.username} /></div>
+              <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" bind:value={userForm.email} /></div>
+              <div class="col-md-6"><label class="form-label">Password</label><input type="text" class="form-control" bind:value={userForm.password} placeholder={route.kind==='module-detail'?'******':''} /></div>
+              <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="text" class="form-control" bind:value={userForm.confirm_password} /></div>
+              <div class="col-md-6"><label class="form-label">Role</label><select class="form-select" bind:value={userForm.role}><option value="guest">Guest</option><option value="admin">Admin</option></select></div>
+              <div class="col-md-6"><label class="form-label">Status</label><select class="form-select" bind:value={userForm.status}><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+              <div class="col-md-12 d-flex gap-2"><button class="btn btn-primary" onclick={async () => { const e = validateUserForm(route.kind==='module-detail'); if (e) { error = e; return; } syncUserDraftFromForm(); await saveRecord('users'); }}>{route.kind==='module-detail' ? tt('update') : tt('create')}</button><button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
+            </div>
+          {:else}
           <div class="row g-3 mb-3">
             <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
             <div class="col-md-3"><label class="form-label" for="sort-input">{tt('sortById')}</label><select id="sort-input" class="form-select" bind:value={sort}><option value="asc">asc</option><option value="desc">desc</option></select></div>
@@ -323,6 +378,7 @@
               }
             }}></textarea></div>
           </div>
+          {/if}
       </SectionCard>
       {#if activeModule === 'cars' || activeModule === 'customers'}
         <UploadForm onUpload={uploadImage} t={tt} />
