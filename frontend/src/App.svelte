@@ -34,7 +34,6 @@
 
   const legacyFallbackUrl = import.meta.env.VITE_UI_FALLBACK_LEGACY_URL ?? '';
   const forceLegacyFallback = String(import.meta.env.VITE_UI_ROLLBACK_FORCE_LEGACY ?? 'false').toLowerCase() === 'true';
-  const showJsonDebugEditor = String(import.meta.env.VITE_UI_DEBUG_JSON_EDITOR ?? 'false').toLowerCase() === 'true';
 
   type AppRoute =
     | { kind: 'home' }
@@ -74,7 +73,6 @@
   let selectedId = '';
   let filter = '';
   let globalSearchTerm = '';
-  let draftText = '{}';
   let sort: 'asc' | 'desc' = 'asc';
   let page = 1;
   const pageSize = 10;
@@ -119,8 +117,7 @@
   }
 
   function go(path: string) { window.location.hash = `#${path}`; }
-  function syncDraftText() { draftText = JSON.stringify(draft, null, 2); }
-  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); customerForm = toCustomerForm(); transactionForm = toTransactionForm(); transactionItems = [{ name: '', price: '' }]; pendingCarImages = []; pendingCustomerImages = []; syncDraftText(); }
+  function clearEditor() { draft = {}; selectedId = ''; userForm = toUserForm(); carForm = toCarForm(); customerForm = toCustomerForm(); transactionForm = toTransactionForm(); transactionItems = [{ name: '', price: '' }]; pendingCarImages = []; pendingCustomerImages = []; }
 
   async function guarded<T>(fn: () => Promise<T>) {
     try {
@@ -229,7 +226,6 @@
     if (module === 'cars') carForm = toCarForm(detail);
     if (module === 'customers') customerForm = toCustomerForm(detail);
     if (module === 'transactions') { transactionForm = toTransactionForm(detail); transactionItems = toTransactionItems(detail); }
-    syncDraftText();
   }
 
 
@@ -335,7 +331,7 @@
     }
   }
 
-  async function bootstrapAdmin(module: ModuleKey) { clearEditor(); page = 1; await loadModule(module); syncDraftText(); }
+  async function bootstrapAdmin(module: ModuleKey) { clearEditor(); page = 1; await loadModule(module); }
 
   async function syncRoute() {
     route = parseRoute(window.location.hash);
@@ -356,7 +352,6 @@
     if (route.kind === 'settings') await loadSettings();
   }
 
-  syncDraftText();
 
   onMount(() => {
     if (forceLegacyFallback && legacyFallbackUrl) {
@@ -451,22 +446,6 @@
             <CustomersPage {routeMode} {customerForm} {customerSegmentation} {customerSegment} setCustomerSegment={(v)=>customerSegment=v} {pendingCustomerImages} setPendingCustomerImages={(v)=>pendingCustomerImages=v} {saveCustomerRecord} {clearEditor} {go} {selectedId} {currentRouteId} tt={tt} />
           {:else if activeModule === 'transactions'}
             <TransactionsPage {routeMode} {transactionForm} {transactionItems} setError={(v) => error = v} {syncTransactionDraftFromForm} {saveRecord} {clearEditor} {addTransactionItem} {removeTransactionItem} {transactionSummary} {transactionStatusGroups} {filter} setFilter={(v) => filter = v} tt={tt} />
-          {:else}
-          <div class="row g-3 mb-3">
-            <div class="col-md-4"><label class="form-label" for="filter-input">{tt('filterLabel')}</label><input id="filter-input" class="form-control" bind:value={filter} placeholder={tt('filterPlaceholder')} /></div>
-            <div class="col-md-3"><label class="form-label" for="sort-input">{tt('sortById')}</label><select id="sort-input" class="form-select" bind:value={sort}><option value="asc">asc</option><option value="desc">desc</option></select></div>
-            <div class="col-md-5 d-flex align-items-end gap-2"><button class="btn btn-primary" onclick={() => saveRecord(activeModule)}>{selectedId ? tt('update') : tt('create')}</button><button class="btn btn-outline-secondary" onclick={clearEditor}>{tt('reset')}</button></div>
-            {#if showJsonDebugEditor}
-              <div class="col-12"><label class="form-label" for="draft-json">JSON payload (debug only)</label><textarea id="draft-json" class="form-control" rows="8" bind:value={draftText} onchange={() => {
-                try {
-                  draft = JSON.parse(draftText);
-                  error = '';
-                } catch (parseError) {
-                  error = (parseError as Error).message;
-                }
-              }}></textarea></div>
-            {/if}
-          </div>
           {/if}
       </SectionCard>
       {#if activeModule === 'cars' || activeModule === 'customers'}
