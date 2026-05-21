@@ -19,9 +19,9 @@
   import CarsPage from './pages/admin/CarsPage.svelte';
   import CustomersPage from './pages/admin/CustomersPage.svelte';
   import SearchPage from './pages/admin/SearchPage.svelte';
+  import NotFoundPage from './pages/admin/NotFoundPage.svelte';
 
   const modules: ModuleKey[] = ['users', 'cars', 'customers', 'transactions'];
-  const moduleSet = new Set<ModuleKey>(modules);
 
   const legacyFallbackUrl = import.meta.env.VITE_UI_FALLBACK_LEGACY_URL ?? '';
   const forceLegacyFallback = String(import.meta.env.VITE_UI_ROLLBACK_FORCE_LEGACY ?? 'false').toLowerCase() === 'true';
@@ -85,12 +85,6 @@
   function currentRouteId() { return routeMode === 'detail' && 'id' in route ? route.id : ''; }
   function tt(key: string, vars: Record<string, string | number> = {}) { return get(tStore)(key, vars); }
 
-  const singularRouteToModule: Record<string, ModuleKey> = {
-    user: 'users',
-    car: 'cars',
-    customer: 'customers',
-    transaction: 'transactions'
-  };
 
   function parseRoute(hash: string): AppRoute {
     const raw = hash.replace('#', '') || '/';
