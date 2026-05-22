@@ -180,6 +180,18 @@
     searchResults = { users: res.users ?? [], cars: res.cars ?? [], customers: res.customers ?? [], transactions: res.transactions ?? [] };
   }
 
+  function searchResultPath(module: ModuleKey, id: string | number | undefined) {
+    const entity = module === 'users' ? 'user' : module === 'cars' ? 'car' : module === 'customers' ? 'customer' : 'transaction';
+    return `#/admin/${entity}/${id ?? ''}`;
+  }
+
+  function searchResultLabel(module: ModuleKey, result: ModuleRecord) {
+    if (module === 'users') return `${String((result as any).username ?? '-')}${(result as any).email ? ` (${String((result as any).email)})` : ''}`;
+    if (module === 'cars') return `${String((result as any).name ?? '-')}${(result as any).license_plate_no ? ` • ${String((result as any).license_plate_no)}` : ''}`;
+    if (module === 'customers') return `${String((result as any).name ?? '-')}${(result as any).phone ? ` • ${String((result as any).phone)}` : ''}`;
+    return `${String((result as any).customer_name ?? (result as any).customer_id ?? 'Customer -')} → ${String((result as any).car_name ?? (result as any).car_id ?? 'Car -')} (${String((result as any).status ?? '-')})`;
+  }
+
   async function loadSettings() {
     const res = await guarded(() => apiFetch('/api/admin/system')) as Settings | null;
     if (!res) return;
@@ -401,7 +413,7 @@
                 {#if (searchResults[module]?.length ?? 0) > 0}
                   <ul class="mb-0 ps-3">
                     {#each searchResults[module].slice(0, 3) as result}
-                      <li><a href={`#/admin/${module === 'users' ? 'user' : module === 'cars' ? 'car' : module === 'customers' ? 'customer' : 'transaction'}/${result.id}`}>{String(result.id ?? '-')}</a> - {JSON.stringify(result).slice(0, 80)}...</li>
+                      <li><a href={searchResultPath(module, result.id)}>{String(result.id ?? '-')}</a> - {searchResultLabel(module, result)}</li>
                     {/each}
                   </ul>
                 {/if}
