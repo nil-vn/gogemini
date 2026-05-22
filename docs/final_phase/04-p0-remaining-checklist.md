@@ -27,7 +27,7 @@ Date: 2026-05-21
 ## P0-05 — Search parity + grouped results
 - [x] Dedicated `/admin/search` route and grouped module sections.
 - [x] Deep-link from search results to detail routes.
-- [ ] Replace generic JSON snippet preview with domain-specific row renderers.
+- [x] Replace generic JSON snippet preview with domain-specific row renderers.
 - [ ] Align empty/no-result copy and UX parity with legacy.
 
 ## P0-06 — 404/Error parity

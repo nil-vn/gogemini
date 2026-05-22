@@ -160,4 +160,4 @@ Tách `frontend/src/App.svelte` thành page-level modules:
 ## Daily Reporting Log (to fill during execution)
 | Date | Task ID | Owner | Status | Risks | Evidence Link | Next Action |
 |---|---|---|---|---|---|---|
-| 2026-05-21 | P0-05 | TBD | In progress | Status mapping divergence | TBD | Align enum mapping |
+| 2026-05-21 | P0-05 | TBD | Completed | Empty/no-result UX parity still pending | TBD | Implement legacy-equivalent empty state copy |
