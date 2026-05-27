@@ -28,7 +28,7 @@ Date: 2026-05-21
 - [x] Dedicated `/admin/search` route and grouped module sections.
 - [x] Deep-link from search results to detail routes.
 - [x] Replace generic JSON snippet preview with domain-specific row renderers.
-- [ ] Align empty/no-result copy and UX parity with legacy.
+- [x] Align empty/no-result copy and UX parity with legacy.
 
 ## P0-06 — 404/Error parity
 - [x] Dedicated NotFound page component wired for unknown routes.

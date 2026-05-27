@@ -192,6 +192,15 @@
     return `${String((result as any).customer_name ?? (result as any).customer_id ?? 'Customer -')} → ${String((result as any).car_name ?? (result as any).car_id ?? 'Car -')} (${String((result as any).status ?? '-')})`;
   }
 
+
+  function totalSearchResults() {
+    return modules.reduce((total, module) => total + (searchResults[module]?.length ?? 0), 0);
+  }
+
+  function hasSearchQuery() {
+    return globalSearchTerm.trim().length > 0;
+  }
+
   async function loadSettings() {
     const res = await guarded(() => apiFetch('/api/admin/system')) as Settings | null;
     if (!res) return;
@@ -402,25 +411,35 @@
     >
       <Breadcrumbs onNavigate={go} items={[{ label: "Dashboard", path: "/admin/dashboard" }, ...(route.kind === "dashboard" ? [] : [{ label: route.kind === "settings" ? "System" : route.kind === "search" ? "Search" : activeModule }])]} />
       <NoticeStack isLoading={isLoading} message={message} error={error} onRetry={retryLastAction} t={tt} />
-    {#if globalSearchTerm.trim().length > 0}
+    {#if hasSearchQuery()}
       <SectionCard title={tt('searchResults')}>
-        <div class="row g-3">
-          {#each modules as module}
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <h6 class="mb-2 text-capitalize">{module}</h6>
-                <p class="text-muted mb-2">{searchResults[module]?.length ?? 0} kết quả</p>
-                {#if (searchResults[module]?.length ?? 0) > 0}
-                  <ul class="mb-0 ps-3">
-                    {#each searchResults[module].slice(0, 3) as result}
-                      <li><a href={searchResultPath(module, result.id)}>{String(result.id ?? '-')}</a> - {searchResultLabel(module, result)}</li>
-                    {/each}
-                  </ul>
-                {/if}
+        {#if totalSearchResults() === 0}
+          <div class="border rounded p-3 bg-light">
+            <h6 class="mb-2">Không tìm thấy kết quả phù hợp.</h6>
+            <p class="text-muted mb-0">Vui lòng thử lại với từ khóa khác hoặc thông tin cụ thể hơn (mã giao dịch, biển số xe, số điện thoại).</p>
+          </div>
+        {:else}
+          <p class="text-muted mb-3">Đã tìm thấy <strong>{totalSearchResults()}</strong> kết quả trong các nhóm nghiệp vụ.</p>
+          <div class="row g-3">
+            {#each modules as module}
+              <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                  <h6 class="mb-2 text-capitalize">{module}</h6>
+                  <p class="text-muted mb-2">{searchResults[module]?.length ?? 0} kết quả</p>
+                  {#if (searchResults[module]?.length ?? 0) > 0}
+                    <ul class="mb-0 ps-3">
+                      {#each searchResults[module].slice(0, 3) as result}
+                        <li><a href={searchResultPath(module, result.id)}>{String(result.id ?? '-')}</a> - {searchResultLabel(module, result)}</li>
+                      {/each}
+                    </ul>
+                  {:else}
+                    <p class="text-muted mb-0">Chưa có kết quả trong nhóm này.</p>
+                  {/if}
+                </div>
               </div>
-            </div>
-          {/each}
-        </div>
+            {/each}
+          </div>
+        {/if}
       </SectionCard>
     {/if}
 

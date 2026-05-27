@@ -160,4 +160,4 @@ Tách `frontend/src/App.svelte` thành page-level modules:
 ## Daily Reporting Log (to fill during execution)
 | Date | Task ID | Owner | Status | Risks | Evidence Link | Next Action |
 |---|---|---|---|---|---|---|
-| 2026-05-21 | P0-05 | TBD | Completed | Empty/no-result UX parity still pending | TBD | Implement legacy-equivalent empty state copy |
+| 2026-05-22 | P0-05 | Codex | Completed | None | frontend/src/App.svelte; frontend/src/pages/admin/SearchPage.svelte | Maintain and validate copy parity in regression runs |
